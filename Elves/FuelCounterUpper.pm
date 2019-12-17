@@ -40,6 +40,19 @@ our $VERSION = '0.01.00';
 # What is the sum of the fuel requirements for all of the modules on
 # your spacecraft?
 
+# Instructions addendum:
+# 
+# Fuel itself requires fuel just like a module - take its mass, divide
+# by three, round down, and subtract 2. However, that fuel also requires
+# fuel, and that fuel requires fuel, and so on. Any mass that would
+# require negative fuel should instead be treated as if it requires zero
+# fuel; the remaining mass, if any, is instead handled by wishing really
+# hard, which has no mass and is outside the scope of this calculation.
+# 
+# So, for each module mass, calculate its fuel and add it to the total.
+# Then, treat the fuel amount you just calculated as the input mass and
+# repeat the process, continuing until a fuel requirement is zero or
+# negative.
 
 
 my $fuel_factor = 3;
@@ -55,9 +68,20 @@ sub mass_to_fuel {
     return sprintf( "%u", $mass / $fuel_factor) - $fuel_adjust;
 }
 
+sub real_mass_to_fuel {
+    my $mass = shift;
+    my $fuel = 0;
+    my $fuel_mass = mass_to_fuel $mass;
+    while ( 0 < $fuel_mass ) {
+        $fuel += $fuel_mass;
+        $fuel_mass = mass_to_fuel $fuel_mass;
+    }
+    return $fuel;
+}
+
 sub find_module_fuel_cost {
     my $mass = shift;
-    my $fuel = mass_to_fuel $mass;
+    my $fuel = real_mass_to_fuel $mass;
     say sprintf $fuel_table_format, $mass, $fuel if $main::show_progress;
     return $fuel;
 }
