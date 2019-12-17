@@ -13,6 +13,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	slurp_data
 	read_lines
+	read_comma_list
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -21,7 +22,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01.00';
+our $VERSION = '0.01.01';
 
 # Presumption is that none of the data files will be extremely large,
 # and should be easily handled by system memory.
@@ -46,6 +47,20 @@ sub read_lines {
     return unless defined wantarray;
     my @puzzle_data = slurp_data shift;
     return @puzzle_data;
+}
+
+sub read_comma_list {
+# Read the one-line file and split on given string, comma by default
+#    If the file is NOT a one-liner, the lines will be joined with a
+#    space, loosing any concept of "lines"
+# Pathname of the data file to read is first argument
+# Delimiter is, optionally, the second argument
+# Return: list of items on the line
+    return unless defined wantarray;
+    my $puzzle_data = slurp_data shift;
+    my $delimiter = shift || ',';
+    my @data_list = split $delimiter, $puzzle_data;
+    return @data_list;
 }
 
 1;
