@@ -17,6 +17,9 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	system_memory
 	system_register
 	system_flag 
+    %addressing
+    %flags
+    %registers
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -25,6 +28,41 @@ our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
 
+# Data structures for providing "names" for the address modes, 
+# registers, and flags.
+our %addressing = (
+    Absolute    => 0,
+    Accumulator => 1,
+    Direct      => 1,
+    Indexed     => 2,
+    Immediate   => 1,
+    Implied     => 1,
+    Indirect    => 3,
+    Pointer     => 3,
+    Reference   => 4,
+    Relative    => 4,
+);
+
+our %registers = (
+    Accumulator    => 'A',
+    CodePointer    => 'C',
+    IndexPointer   => 'I',
+    StackPointer   => 'S',
+    StatusRegister => 'F',
+    X_Register     => 'X',
+);
+
+our %flags = (
+    Break     => 'B',
+    Carry     => 'C',
+    Decimal   => 'D',
+    Interrupt => 'I',
+    Negative  => 'N',
+    Overflow  => 'V',
+    Zero      => 'Z',
+);
+
+# Internal routines for handling status flag access
 sub base_read_flag {
     return $process_registers{F} & $status_flags{$_[0]} ? 1 : 0;
 }
@@ -63,35 +101,7 @@ sub base_dump_flags {
     return 1;
 }
 
-sub system_flag {
-# Routine to read/set/clear the flags of the status register.
-#   No args is a dump of the status flags
-#       Only Negative and Zero do any testing, other wise it
-#       results in a call to set the flag based on true/false of value
-#   One arg is read flag
-#   Two arg is set flag
-#   Three arg set/clear flag on test of value
-# Arg 1: Flag (NVBDIZC)
-# Arg 2: ignored if 3rd arg is present, use undef for clarity
-#        1 set flag
-#        0 clear flag
-#        undef clear flag
-# Arg 3: The value to test. Only applies to N and Z, other flags
-#        will toggle, regardless of the value, if the 2nd arg is defined
-    if ( 0 == @_ ) {
-        base_dump_flags;
-        return 1;
-    } elsif ( 1 == @_ ) {
-        return base_read_flag $_[0];
-    } elsif ( 2 == @_ ) {
-        base_set_flag $_[0], $_[1];
-        return base_read_flag $_[0];
-    } elsif ( 3 == @_) {
-        base_test_flag $_[0], $_[2];
-        return base_read_flag $_[0];
-    }
-}
-
+# Internal routines for handling the system register access
 sub base_read_register {
     return $process_registers{$_[0]};
 }
@@ -109,24 +119,7 @@ sub base_dump_registers {
     printf "'F' => %08b\n", $process_registers{F};
 }
 
-sub system_register{
-# Routine to access the system registers
-# No arguments is report all register contents
-# One argument is read the register,
-# two arguments is load the register,
-# Return is the new/current value of the register
-# Arg 1 is the register to access,
-# Arg 2 is the data to save there.
-    if ( 0 == @_ ) {
-        base_dump_registers;
-    } elsif ( 1 == @_ ) {
-        return base_read_register $_[0];
-    } elsif ( 2 == @_ ) {
-        return base_load_register $_[0], $_[1];
-    }
-    return undef;
-}
-
+# Internal routines for handling memory access
 sub base_read_memory {
 # Routine to read memory using the supplied operand and given address mode
 #   Arg 1 is Address mode
@@ -166,6 +159,55 @@ sub base_write_memory {
         return undef;
     }
     return 1;
+}
+
+# Exportable routines for access to system internals
+# Wrapper routines for the internal routines
+sub system_flag {
+# Routine to read/set/clear the flags of the status register.
+#   No args is a dump of the status flags
+#       Only Negative and Zero do any testing, other wise it
+#       results in a call to set the flag based on true/false of value
+#   One arg is read flag
+#   Two arg is set flag
+#   Three arg set/clear flag on test of value
+# Arg 1: Flag (NVBDIZC)
+# Arg 2: ignored if 3rd arg is present, use undef for clarity
+#        1 set flag
+#        0 clear flag
+#        undef clear flag
+# Arg 3: The value to test. Only applies to N and Z, other flags
+#        will toggle, regardless of the value, if the 2nd arg is defined
+    if ( 0 == @_ ) {
+        base_dump_flags;
+        return 1;
+    } elsif ( 1 == @_ ) {
+        return base_read_flag $_[0];
+    } elsif ( 2 == @_ ) {
+        base_set_flag $_[0], $_[1];
+        return base_read_flag $_[0];
+    } elsif ( 3 == @_) {
+        base_test_flag $_[0], $_[2];
+        return base_read_flag $_[0];
+    }
+}
+
+sub system_register{
+# Routine to access the system registers
+# No arguments is report all register contents
+# One argument is read the register,
+# two arguments is load the register,
+# Return is the new/current value of the register
+# Arg 1 is the register to access,
+# Arg 2 is the data to save there.
+    if ( 0 == @_ ) {
+        base_dump_registers;
+    } elsif ( 1 == @_ ) {
+        return base_read_register $_[0];
+    } elsif ( 2 == @_ ) {
+        return base_load_register $_[0], $_[1];
+    }
+    return undef;
 }
 
 sub system_memory {
