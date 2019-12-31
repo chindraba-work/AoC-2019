@@ -14,6 +14,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
+    system_stack
 	system_memory
 	system_register
 	system_flag 
@@ -119,6 +120,22 @@ sub base_dump_registers {
     printf "'F' => %08b\n", $process_registers{F};
 }
 
+sub base_push_stack {
+    return $stack_heap[$process_registers{S}++] = $_[0];
+}
+
+sub base_pull_stack {
+    if ( 0 == $process_registers{S} ) {
+        return undef;
+    }
+    return $stack_heap[--$process_registers{S}];
+}
+
+sub base_dump_stack {
+    say "Stack dump: ", join ', ', (@stack_heap);
+    return undef;
+}
+
 # Internal routines for handling memory access
 sub base_read_memory {
 # Routine to read memory using the supplied operand and given address mode
@@ -208,6 +225,19 @@ sub system_register{
         return base_load_register $_[0], $_[1];
     }
     return undef;
+}
+
+# Routine to access the system stack
+# No arguments is pull
+# One argument is push
+# Special case of one arg is 'dump' which triggers a dump of the stack
+sub system_stack {
+    if ( 0 == @_ ) {
+        return base_pull_stack;
+    } elsif ( 'dump' eq $_[0] ) {
+        return base_dump_stack;
+    }
+    return base_push_stack $_[0];
 }
 
 sub system_memory {
