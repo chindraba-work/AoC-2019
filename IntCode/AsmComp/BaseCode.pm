@@ -15,6 +15,7 @@ our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	system_memory
+	system_register
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -22,6 +23,41 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
+
+sub base_read_register {
+    return $process_registers{$_[0]};
+}
+
+sub base_load_register {
+    $process_registers{$_[0]} = $_[1];
+    return $process_registers{$_[0]};
+}
+
+sub base_dump_registers {
+    say "\nRegister Contents:";
+    map {
+        printf "'%s' => %i\n", $_, $process_registers{$_};
+    } qw(C S I A X);
+    printf "'F' => %08b\n", $process_registers{F};
+}
+
+sub system_register{
+# Routine to access the system registers
+# No arguments is report all register contents
+# One argument is read the register,
+# two arguments is load the register,
+# Return is the new/current value of the register
+# Arg 1 is the register to access,
+# Arg 2 is the data to save there.
+    if ( 0 == @_ ) {
+        base_dump_registers;
+    } elsif ( 1 == @_ ) {
+        return base_read_register $_[0];
+    } elsif ( 2 == @_ ) {
+        return base_load_register $_[0], $_[1];
+    }
+    return undef;
+}
 
 sub base_read_memory {
 # Routine to read memory using the supplied operand and given address mode
@@ -73,7 +109,7 @@ sub system_memory {
 # Arg 2: memory address, will be modified as per address mode
 # Arg 3: if present, the data to write to memory
     if ( 0 == @_ ) {
-        my $memory_dump = join ', ', ($core_ram);
+        my $memory_dump = join ', ', (@core_ram);
         say "Memory dump: $memory_dump";
     } elsif ( 3 < @_ ) {
         @core_ram = @_;
