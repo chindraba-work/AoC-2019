@@ -16,6 +16,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	system_memory
 	system_register
+	system_flag 
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -23,6 +24,73 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
+
+sub base_read_flag {
+    return $process_registers{F} & $status_flags{$_[0]} ? 1 : 0;
+}
+
+sub base_set_flag {
+    if ( 0 == $_[1] ) {
+        $process_registers{F} &=  ~$status_flags{$_[0]};
+    } else {
+        $process_registers{F} |=  $status_flags{$_[0]};
+    }
+}
+
+sub base_test_flag {
+    if ( 'N' eq $_[0] ) {
+        if ( $_[1] == abs($_[1]) ) {
+            $process_registers{F} &= ~$status_flags{N};
+        } else {
+            $process_registers{F} |=  $status_flags{N};
+        }
+    } elsif ( 'Z' eq $_[0] ) {
+        if ( 0 == $_[1]) {
+            $process_registers{F} |=  $status_flags{Z};
+        } else {
+            $process_registers{F} &= ~$status_flags{Z};
+        }
+    } else {
+        base_set_flag $_[0], $_[1];
+    }
+}
+
+sub base_dump_flags {
+    say "\nFlag Status:";
+    map {
+        printf "Flag %s is %s\n", $_, ($process_registers{F} & $status_flags{$_})? 'Set' : 'Clear';
+    } qw(N V B D I Z C);
+    return 1;
+}
+
+sub system_flag {
+# Routine to read/set/clear the flags of the status register.
+#   No args is a dump of the status flags
+#       Only Negative and Zero do any testing, other wise it
+#       results in a call to set the flag based on true/false of value
+#   One arg is read flag
+#   Two arg is set flag
+#   Three arg set/clear flag on test of value
+# Arg 1: Flag (NVBDIZC)
+# Arg 2: ignored if 3rd arg is present, use undef for clarity
+#        1 set flag
+#        0 clear flag
+#        undef clear flag
+# Arg 3: The value to test. Only applies to N and Z, other flags
+#        will toggle, regardless of the value, if the 2nd arg is defined
+    if ( 0 == @_ ) {
+        base_dump_flags;
+        return 1;
+    } elsif ( 1 == @_ ) {
+        return base_read_flag $_[0];
+    } elsif ( 2 == @_ ) {
+        base_set_flag $_[0], $_[1];
+        return base_read_flag $_[0];
+    } elsif ( 3 == @_) {
+        base_test_flag $_[0], $_[2];
+        return base_read_flag $_[0];
+    }
+}
 
 sub base_read_register {
     return $process_registers{$_[0]};
