@@ -115,7 +115,7 @@ sub base_load_register {
 sub base_dump_registers {
     say "\nRegister Contents:";
     map {
-        printf "'%s' => %i\n", $_, $process_registers{$_};
+        printf "'%s' => %2\$064b: %i\n", $_, $process_registers{$_};
     } qw(C S I A X);
     printf "'F' => %08b\n", $process_registers{F};
 }
