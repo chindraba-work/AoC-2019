@@ -143,9 +143,7 @@ sub base_read_memory {
 #   Arg_2 is operand
 #   Return is the resolved value
     my ($addr_mode, $operand) = @_;
-    if ($addr_mode == $address_mode{relative} ) {
-        return $operand + $process_registers{S};
-    } elsif ($addr_mode == $address_mode{absolute} ) {
+    if ($addr_mode == $address_mode{absolute} ) {
         return $core_ram[$operand];
     } elsif ($addr_mode == $address_mode{indexed} ) {
         return $core_ram[$process_registers{I} + $operand];
