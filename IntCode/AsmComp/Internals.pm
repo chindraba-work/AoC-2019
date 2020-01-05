@@ -14,6 +14,7 @@ our %EXPORT_TAGS = (
         qw(
             @core_ram
             @stack_heap
+            @program_code
         )
     ],
     'registers' => [
@@ -32,7 +33,7 @@ our %EXPORT_TAGS = (
         %address_mode
     ),
     @{ $EXPORT_TAGS{'registers'} },
-    @{ $EXPORT_TAGS{'memory'} }
+    @{ $EXPORT_TAGS{'memory'} },
 ];
 @EXPORT_TAGS{'all'} = [
     @{ $EXPORT_TAGS{'storage'} },
@@ -49,15 +50,20 @@ our @core_ram = (); # the complete memory of the computer
 our @stack_heap = (); # the stack for the computer
 our %address_mode = (
     accumulator => 1, # (I) No operand, implied accumulator
-    absolute    => 0, # (A) Operand is the data address
-    indexed     => 2, # (X) Operand plus I-register is the data address
+    absolute    => 0, # (A) Data address is the operand
+                      #     Jump target is the opcode
+    indexed     => 2, # (X) Data address is I-register plus operand
+                      #     Jump target is I-register plus (signed) operand 
     direct      => 1, # (I) Operand is the data itself, not an address (not used in write)
     immediate   => 1, # (I) Operand is the data itself, not an address (not used in write)
+                      #     Jump target is signed offset from C-register (after stepping)
     implied     => 1, # (I) No operand, implied by the instruction
     indirect    => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
     pointer     => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
+                      #     Jump target is the data at address operand
     reference   => 4, # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
-    relative    => 4, # (R) The operand is a signed offset from C-register (after stepping)
+    relative    => 5, # (R) The operand is a signed offset from C-register (after stepping)
+                      #     Jump target is the data at address I-register plus (signed) operand
 );
 our %process_registers = (
     F => 0, # flags register [NV-BDIZC]
@@ -78,6 +84,7 @@ our %status_flags = ( # bitmap masks for contents of F register $reg{F};
     Z => 1 << 1,  # Zero
     C => 1 << 0,  # Carry (Not implemented here)
 );
+our @program_code = (); # the executable section of memory
 
 
 1;
@@ -106,7 +113,7 @@ Chindraba, E<lt>aoc@chindraba.workE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright © 2019  Chindraba (Ronald Lamoreaux)
+Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)
                   <aoc@chindraba.work>
 - All Rights Reserved
 

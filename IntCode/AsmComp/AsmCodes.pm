@@ -12,8 +12,9 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-    load_memory
-    run_snippet
+	program_load
+	memory_load
+	program_run
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -22,13 +23,15 @@ our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
 
-my @snippet;
 my $access_mode;
 my $operand;
 
+sub set_operand {
+    $access_mode = $addressing{program_next_code()};
+    $operand = program_next_code();
+}
+
 sub get_memory {
-    $access_mode = shift(@snippet);
-    $operand = shift(@snippet);
     return system_memory($access_mode, $operand);
 }
 
@@ -50,7 +53,8 @@ sub register_check {
 }
 
 sub branch {
-    system_register('C', 2 + system_register('C') + $_[2])
+    set_operand();
+    program_set_address($access_mode, $operand)
         if ( $_[0] == system_flag($_[1]) );
 }
 
@@ -68,37 +72,37 @@ sub core_dump {
 }
 
 sub load_register {
+    set_operand();
     system_register($_[0], get_memory());
     register_check($_[0])
         if ( $_[1] );
 }
 
 sub store_register {
-    $access_mode = shift(@snippet);
-    $operand = shift(@snippet);
+    set_operand();
     set_memory(system_register($_[0]));
 }
 
 # Routines to implement the assembly codes in a common manner
 my %asmcode = (
     ABT => sub {
-        system_memory();
-        system_stack('dump');
-        system_register();
-        system_flag();
+        core_dump();
         system_flag('I', 1);
         system_flag('B', 1);
         exit;
     },
     ADC => sub {
+        set_operand();
         system_register('A', system_register('A') + get_memory());
         register_check('A');
     },
     AND => sub {
+        set_operand();
         system_register('A', system_register('A') & get_memory());
         register_check('A');
     },
     ASL => sub {
+        set_operand();
         system_register('D', get_memory());
         system_flag('C', undef, system_register('D') & (~0^~0>>1));
         system_register('D', system_register('D') << 1);
@@ -106,67 +110,75 @@ my %asmcode = (
         register_check('D');
     },
     ASR => sub {
+        set_operand(); 
         my $value = get_memory();
         system_register('D', $value & (~0^~0>>1));
         set_memory(system_register('D') | ($value >> 1));
         memory_check();
     },
-    BCC => sub { branch(0, 'C', get_memory()); },
-    BCS => sub { branch(1, 'C', get_memory()); },
-    BEQ => sub { branch(1, 'Z', get_memory()); },
+    BCC => sub { branch(0, 'C'); },
+    BCS => sub { branch(1, 'C'); },
+    BEQ => sub { branch(1, 'Z'); },
     BIT => sub {
+        set_operand();
         system_register('D', get_memory());
         system_flag('N', undef, system_register('D'));
         system_register('D', system_register('D') & system_register('A'));
         system_flag('Z', undef, system_register('D'));
     },
-    BMI => sub { branch(1, 'N', get_memory); },
-    BNE => sub { branch(0, 'Z', get_memory); },
-    BPL => sub { branch(0, 'N', get_memory); },
+    BMI => sub { branch(1, 'N'); },
+    BNE => sub { branch(0, 'Z'); },
+    BPL => sub { branch(0, 'N'); },
     BRK => sub {
-        system_stack(2 + system_register('C'));
+        system_stack(system_register('C') + 2);
         system_stack(system_register('F'));
-        system_memory();
-        system_stack('dump');
-        system_register();
-        system_flag();
+        core_dump();
         system_flag('I', 1);
         system_flag('B', 1);
     },
-    BVC => sub { branch(0, 'V', get_memory()); },
-    BVS => sub { branch(1, 'V', get_memory()); },
+    BVC => sub { branch(0, 'V'); },
+    BVS => sub { branch(1, 'V'); },
     CLC => sub { system_flag('C', 0); },
     CLD => sub { system_flag('D', 0); },
     CLI => sub { system_flag('I', 0); },
     CLV => sub { system_flag('V', 0); },
     CMP => sub {
+        set_operand();
         system_register('D', system_register('A') - get_memory());
         register_check('D');
     },
     CPX => sub {
+        set_operand();
         system_register('D', system_register('X') - get_memory());
         register_check('D');
     },
     DEC => sub {
+        set_operand();
         my $value = get_memory();
         system_memory($access_mode, $operand, $value - 1);
         memory_check();
+    },
+    DEI => sub {
+        system_register('I', system_register('I') - 1);
+        register_check('I');
     },
     DEX => sub {
         system_register('X', system_register('X') - 1);
         register_check('X');
     },
     EOR => sub {
+        set_operand();
         system_register('A', system_register('A') ^ get_memory());
         register_check('A');
     },
     INC => sub {
+        set_operand();
         my $value = get_memory();
         system_memory($access_mode, $operand, $value + 1);
         memory_check();
     },
     INP => sub {
-        get_memory();
+        set_operand();
         system_register('D', shift(@ARGV))
             || die "Data expected but not found on command line.";
         register_check('D');
@@ -176,14 +188,22 @@ my %asmcode = (
             system_memory($access_mode, $operand, system_register('D'));
         }
     },
+    INI => sub {
+        system_register('I', system_register('I') + 1);
+        register_check('I');
+    },
     INX => sub {
         system_register('X', system_register('X') + 1);
         register_check('X');
     },
-    JMP => sub { system_register('C', get_memory()); },
+    JMP => sub { 
+        set_operand();
+        program_set_address($access_mode, $operand);
+    },
     JSR => sub {
-        system_stack(system_register('C') + 2);
-        system_register('C', get_memory());
+        set_operand();
+        system_stack(system_register('C'));
+        program_set_address($access_mode, $operand);
     },
     LDA => sub { load_register('A', 1); },
     LDF => sub { load_register('F'); },
@@ -191,18 +211,22 @@ my %asmcode = (
     LDS => sub { load_register('S', 1); },
     LDX => sub { load_register('X', 1); },
     LSR => sub {
+        set_operand();
         set_memory(get_memory() >> 1);
         memory_check();
     },
     MUL => sub {
+        set_operand();
         system_register('A', system_register('A') * get_memory());
         register_check('A');
     },
     ORA => sub {
+        set_operand();
         system_register('A', system_register('A') | get_memory());
         register_check('A');
     },
     OUT => sub {
+        set_operand();
         system_register('D', get_memory());
         printf(
             "Program output: %1\$016b: %1\$u, (%1\$d)\n",
@@ -217,12 +241,14 @@ my %asmcode = (
     },
     PLP => sub { system_register('F', system_stack()); },
     ROL => sub {
+        set_operand();
         my $value = get_memory();
         system_flag('C', undef, $value & (~0^~0>>1));
         set_memory(($value << 1) + system_flag('C'));
         memory_check();
     },
     ROR => sub {
+        set_operand();
         my $value = get_memory();
         system_flag('C', undef, $value & 1);
         if ( system_flag('C') ) {
@@ -238,6 +264,7 @@ my %asmcode = (
     },
     RTS => sub { system_register('C', system_stack()); },
     SBC => sub {
+        set_operand();
         system_register('A', system_register('A') - get_memory());
         map {
             system_flag($_, undef, system_register('A'));
@@ -248,13 +275,7 @@ my %asmcode = (
     SEI => sub { system_flag('I', 1); },
     STA => sub { store_register('A'); },
     STI => sub { store_register('I'); },
-    STP => sub {
-        system_memory();
-        system_stack('dump');
-        system_register();
-        system_flag();
-        exit;
-    },
+    STP => sub { core_dump(); exit; },
     STX => sub { store_register('X'); },
     TAI => sub { copy_register('A', 'I', 1); },
     TAX => sub { copy_register('A', 'X', 1); },
@@ -267,6 +288,7 @@ my %asmcode = (
 );
 
 $asmcode{DIV} = sub {
+    set_operand();
     my $value = get_memory();
     if ( 0 == $value ) {
         system_flag('Z', 1);
@@ -280,13 +302,20 @@ $asmcode{DIV} = sub {
 };
 
 sub load_memory {
-    system_memory( @_, 0, 0, 0 );
+    system_memory(@_);
 };
 
-sub run_snippet {
-    @snippet = @_;
-    while ( @snippet && ! system_flag('I') && ! system_flag('B') ) {
-        $asmcode{shift(@snippet)}();
+sub memory_load {
+    load_memory(@_, 0, 0, 0 );
+};
+
+sub program_load {
+    program_init(@_);
+}
+
+sub program_run {
+    while ( ! system_flag('I') && ! system_flag('B') && system_register('C') < program_length() ) {
+        $asmcode{program_next_code()}();
     }
 }
 
@@ -303,8 +332,8 @@ IntCode::AsmComp::AsmCodes
 
 =head1 DESCRIPTION
 
-Implementation of the low-level workings of the IntCode computer needed
-by the elves in the 2019 Advent of Code challenges.
+Implementation of the assembly-level workings of the IntCode computer
+needed by the elves in the 2019 Advent of Code challenges.
 
 =head2 EXPORT
 
@@ -316,7 +345,7 @@ Chindraba, E<lt>aoc@chindraba.workE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright © 2019  Chindraba (Ronald Lamoreaux)
+Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)
                   <aoc@chindraba.work>
 - All Rights Reserved
 
