@@ -10,13 +10,6 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
-    'memory' => [
-        qw(
-            @core_ram
-            @stack_heap
-            @program_code
-        )
-    ],
     'registers' => [
         qw(
             %process_registers
@@ -27,11 +20,16 @@ our %EXPORT_TAGS = (
             %status_flags
         )
     ],
+    'memory' => [
+        qw(
+            %address_mode
+            @stack_heap
+            @core_ram
+            @program_code
+        )
+    ],
 );
 @EXPORT_TAGS{'storage'} = [
-    qw (
-        %address_mode
-    ),
     @{ $EXPORT_TAGS{'registers'} },
     @{ $EXPORT_TAGS{'memory'} },
 ];
@@ -46,25 +44,6 @@ our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
 
-our @core_ram = (); # the complete memory of the computer
-our @stack_heap = (); # the stack for the computer
-our %address_mode = (
-    accumulator => 1, # (I) No operand, implied accumulator
-    absolute    => 0, # (A) Data address is the operand
-                      #     Jump target is the opcode
-    indexed     => 2, # (X) Data address is I-register plus operand
-                      #     Jump target is I-register plus (signed) operand 
-    direct      => 1, # (I) Operand is the data itself, not an address (not used in write)
-    immediate   => 1, # (I) Operand is the data itself, not an address (not used in write)
-                      #     Jump target is signed offset from C-register (after stepping)
-    implied     => 1, # (I) No operand, implied by the instruction
-    indirect    => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
-    pointer     => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
-                      #     Jump target is the data at address operand
-    reference   => 4, # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
-    relative    => 5, # (R) The operand is a signed offset from C-register (after stepping)
-                      #     Jump target is the data at address I-register plus (signed) operand
-);
 our %process_registers = (
     F => 0, # flags register [NV-BDIZC]
     C => 0, # program code pointer
@@ -83,6 +62,25 @@ our %status_flags = ( # bitmap masks for contents of F register $reg{F};
     I => 1 << 2,  # Interrupt
     Z => 1 << 1,  # Zero
     C => 1 << 0,  # Carry (Not implemented here)
+);
+our @stack_heap = (); # the stack for the computer
+our @core_ram = (); # the complete memory of the computer
+our %address_mode = (
+    accumulator => 1, # (I) No operand, implied accumulator
+    absolute    => 0, # (A) Data address is the operand
+                      #     Jump target is the opcode
+    indexed     => 2, # (X) Data address is I-register plus operand
+                      #     Jump target is I-register plus (signed) operand 
+    direct      => 1, # (I) Operand is the data itself, not an address (not used in write)
+    immediate   => 1, # (I) Operand is the data itself, not an address (not used in write)
+                      #     Jump target is signed offset from C-register (after stepping)
+    implied     => 1, # (I) No operand, implied by the instruction
+    indirect    => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
+    pointer     => 3, # (P) The operand is a pointer to the address; operand -> memory -> data
+                      #     Jump target is the data at address operand
+    reference   => 4, # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
+    relative    => 5, # (R) The operand is a signed offset from C-register (after stepping)
+                      #     Jump target is the data at address I-register plus (signed) operand
 );
 our @program_code = (); # the executable section of memory
 
@@ -105,7 +103,12 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 =head2 EXPORT
 
-None by default.
+        %process_registers
+        %status_flags
+        %address_mode
+        @stack_heap
+        @core_ram
+        @program_code
 
 =head1 AUTHOR
 

@@ -31,44 +31,35 @@ sub set_operand {
     $operand = program_next_code();
 }
 
-sub get_memory {
-    return system_memory($access_mode, $operand);
-}
-
-sub set_memory {
-    system_memory($access_mode, $operand, $_[0]);
-}
-
 sub flag_test {
     system_flag('N', undef, $_[0]);
     system_flag('Z', undef, $_[0]);
-}
-
-sub memory_check {
-    flag_test(system_memory($access_mode, $operand));
 }
 
 sub register_check {
     flag_test(system_register($_[0]));
 }
 
-sub branch {
-    set_operand();
-    program_set_address($access_mode, $operand)
-        if ( $_[0] == system_flag($_[1]) );
+sub load_memory {
+    system_memory(@_);
+};
+
+sub set_memory {
+    system_memory($access_mode, $operand, $_[0]);
+}
+
+sub get_memory {
+    return system_memory($access_mode, $operand);
+}
+
+sub memory_check {
+    flag_test(system_memory($access_mode, $operand));
 }
 
 sub copy_register {
     system_register($_[1], system_register($_[0]));
     register_check($_[1])
         if ( $_[2] );
-}
-
-sub core_dump {
-    system_memory();
-    system_stack('dump');
-    system_register();
-    system_flag();
 }
 
 sub load_register {
@@ -81,6 +72,19 @@ sub load_register {
 sub store_register {
     set_operand();
     set_memory(system_register($_[0]));
+}
+
+sub branch {
+    set_operand();
+    program_set_address($access_mode, $operand)
+        if ( $_[0] == system_flag($_[1]) );
+}
+
+sub core_dump {
+    system_memory();
+    system_stack('dump');
+    system_register();
+    system_flag();
 }
 
 # Routines to implement the assembly codes in a common manner
@@ -301,10 +305,6 @@ $asmcode{DIV} = sub {
     register_check('A');
 };
 
-sub load_memory {
-    system_memory(@_);
-};
-
 sub memory_load {
     load_memory(@_, 0, 0, 0 );
 };
@@ -337,7 +337,9 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 =head2 EXPORT
 
-None by default.
+	program_load
+	memory_load
+	program_run
 
 =head1 AUTHOR
 

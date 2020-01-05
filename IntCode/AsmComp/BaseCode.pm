@@ -14,13 +14,13 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	system_stack
-	system_memory
-	system_register
-	system_flag 
-	%addressing
-	%flags
 	%registers
+	system_register
+	%flags
+	system_flag 
+	system_stack
+	%addressing
+	system_memory
 	program_init
 	program_length
 	program_next_code
@@ -33,37 +33,53 @@ our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.02';
 
-# Translation hash to provide convenient names to the address modes for
-# memory addressing and for branch/jump targets in the Asm codes
-our %addressing = (
-    Absolute    => $address_mode{absolute},     # (A) Data address is the operand
-                                                #     Jump target is the opcode
-    Accumulator => $address_mode{accumulator},  # (I) No operand, implied accumulator
-    Direct      => $address_mode{direct},       # (I) Operand is the data itself, not an address (not used in write)
-    Indexed     => $address_mode{indexed},      # (X) Data address is I-register plus operand
-                                                #     Jump target is I-register plus (signed) operand 
-    Immediate   => $address_mode{immediate},    # (I) Operand is the data itself, not an address (not used in write)
-                                                #     Jump target is signed offset from C-register (after stepping)
-    Implied     => $address_mode{implied},      # (I) No operand, implied by the instruction
-    Indirect    => $address_mode{indirect},     # (P) The operand is a pointer to the address; operand -> memory -> data
-    Pointer     => $address_mode{pointer},      # (P) The operand is a pointer to the address; operand -> memory -> data
-                                                #     Jump target is the data at address operand
-    Reference   => $address_mode{reference},    # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
-    Relative    => $address_mode{relative},     # (R) The operand is a signed offset from C-register (after stepping)
-);                                              #     Jump target is the data at address I-register plus (signed) operand
-
-# Structure for the system registers
-our %registers = (
-    Accumulator    => $registers{'A'}, # accumulator
-    CodePointer    => $registers{'C'}, # program code pointer
-    IndexPointer   => $registers{'I'}, # data pointer, base value for indexed mode access
-    StackPointer   => $registers{'S'}, # stack pointer, not used as yet
-    StatusRegister => $registers{'F'}, # flags register [NV-BDIZC]
-    X_Register     => $registers{'X'}, # X register
-    DataRegister   => $registers{'D'}, # data register, used as the second value for math ops
+# Structure and routines to handle the system registers
+our %register = (
+    Accumulator    => 'A', # accumulator
+    CodePointer    => 'C', # program code pointer
+    IndexPointer   => 'I', # data pointer, base value for indexed mode access
+    StackPointer   => 'S', # stack pointer, not used as yet
+    StatusRegister => 'F', # flags register [NV-BDIZC]
+    X_Register     => 'X', # X register
+    DataRegister   => 'D', # data register, used as the second value for math ops
 );
 
-# Structure for the system status flags
+sub base_load_register {
+    $process_registers{$_[0]} = $_[1];
+    return $process_registers{$_[0]};
+}
+
+sub base_read_register {
+    return $process_registers{$_[0]};
+}
+
+sub base_dump_registers {
+    say "\nRegister Contents:";
+    map {
+        printf("'%s' => %2\$064b: %i\n", $_, $process_registers{$_});
+    } qw(C S I A X);
+    printf("'F' => %08b\n", $process_registers{F});
+}
+
+# Exported routine for access to system registers
+sub system_register{
+# No arguments is report all register contents
+# One argument is read the register,
+# two arguments is load the register,
+# Return is the new/current value of the register
+# Arg 1 is the register to access,
+# Arg 2 is the data to save there.
+    if ( 0 == @_ ) {
+        base_dump_registers();
+    } elsif ( 1 == @_ ) {
+        return base_read_register($_[0]);
+    } elsif ( 2 == @_ ) {
+        return base_load_register($_[0], $_[1]);
+    }
+    return undef;
+}
+
+# Structure and routines to handle the system status flags
 our %flags = (
     Negative  => 'N', # Negative
     Overflow  => 'V', # Overflow (Not implemented here)
@@ -73,11 +89,6 @@ our %flags = (
     Zero      => 'Z', # Zero
     Carry     => 'C', # Carry (Not implemented here)
 );
-
-# Internal routines for handling status flag access
-sub base_read_flag {
-    return $process_registers{F} & $status_flags{$_[0]} ? 1 : 0;
-}
 
 sub base_set_flag {
     if ( 0 == $_[1] ) {
@@ -105,6 +116,10 @@ sub base_test_flag {
     }
 }
 
+sub base_read_flag {
+    return $process_registers{F} & $status_flags{$_[0]} ? 1 : 0;
+}
+
 sub base_dump_flags {
     say "\nFlag Status:";
     map {
@@ -113,97 +128,6 @@ sub base_dump_flags {
     return 1;
 }
 
-# Internal routines for handling the system register access
-sub base_read_register {
-    return $process_registers{$_[0]};
-}
-
-sub base_load_register {
-    $process_registers{$_[0]} = $_[1];
-    return $process_registers{$_[0]};
-}
-
-sub base_dump_registers {
-    say "\nRegister Contents:";
-    map {
-        printf("'%s' => %2\$064b: %i\n", $_, $process_registers{$_});
-    } qw(C S I A X);
-    printf("'F' => %08b\n", $process_registers{F});
-}
-
-# Routines to handle the system stack
-# The @stack_heap array is used for the stack of the system, but the 
-# push and pull operations are handled manually using the stack pointer
-# register of the system rather than the Perl array functionality.
-# The stack pointer is dual-purpose: the number of elements in the list
-# and the index of the next element to add to the list.
-sub base_push_stack {
-    return $stack_heap[$process_registers{S}++] = $_[0];
-}
-
-sub base_pull_stack {
-    if ( 0 == $process_registers{S} ) {
-        return undef;
-    }
-    return $stack_heap[--$process_registers{S}];
-}
-
-sub base_dump_stack {
-    say("Stack dump: ", join ', ', (@stack_heap[0..$process_registers{S} - 1]));
-    return undef;
-}
-
-# Internal routines for handling memory access
-sub base_read_memory {
-# Routine to read memory using the supplied operand and given address mode
-#   Arg 1 is Address mode
-#   Arg_2 is operand
-#   Return is the resolved value
-    my ($addr_mode, $operand) = @_;
-    if ($addr_mode == $addressing{Absolute} ) {
-        return $core_ram[$operand];
-    } elsif ($addr_mode == $addressing{Indexed} ) {
-        return $core_ram[$process_registers{I} + $operand];
-    } elsif ($addr_mode == $addressing{Pointer} ) {
-        return $core_ram[$core_ram[$operand]];
-    } elsif ($addr_mode == $addressing{Reference} ) {
-        return $core_ram[$core_ram[$process_registers{I} + $operand]];
-    } else {
-        return $operand;
-    }
-}
-
-sub base_write_memory {
-# Routine to write memory using the supplied operand and given address mode
-#   Arg 1 is Address mode
-#   Arg_2 is operand
-#   Arg_3 is the data to write
-    my ($addr_mode, $operand, $data) = @_;
-    if ($addr_mode == $addressing{Absolute} ) {
-        $core_ram[$operand] = $data;
-    } elsif ($addr_mode == $addressing{Indexed} ) {
-        $core_ram[$process_registers{I} + $operand] = $data;
-    } elsif ($addr_mode == $addressing{Pointer} ) {
-        $core_ram[$core_ram[$operand]] = $data;
-    } elsif ($addr_mode == $addressing{Reference} ) {
-        $core_ram[$core_ram[$process_registers{I} + $operand]] = $data;
-    } else {
-        return undef;
-    }
-    return 1;
-}
-
-sub base_load_memory {
-    @core_ram = @_;
-}
-
-sub base_dump_memory {
-    my $memory_dump = join(', ', (@core_ram));
-    say("Memory dump: $memory_dump");
-}
-
-# Exportable routines for access to system internals
-# Wrapper routines for the internal routines
 # Exported routine for access to the system status flags
 sub system_flag {
 # Routine to read/set/clear the flags of the status register.
@@ -234,21 +158,25 @@ sub system_flag {
     }
 }
 
-# Exported routine for access to system registers
-sub system_register{
-# No arguments is report all register contents
-# One argument is read the register,
-# two arguments is load the register,
-# Return is the new/current value of the register
-# Arg 1 is the register to access,
-# Arg 2 is the data to save there.
-    if ( 0 == @_ ) {
-        base_dump_registers();
-    } elsif ( 1 == @_ ) {
-        return base_read_register($_[0]);
-    } elsif ( 2 == @_ ) {
-        return base_load_register($_[0], $_[1]);
+# Routines to handle the system stack
+# The @stack_heap array is used for the stack of the system, but the 
+# push and pull operations are handled manually using the stack pointer
+# register of the system rather than the Perl array functionality.
+# The stack pointer is dual-purpose: the number of elements in the list
+# and the index of the next element to add to the list.
+sub base_push_stack {
+    return $stack_heap[$process_registers{S}++] = $_[0];
+}
+
+sub base_pull_stack {
+    if ( 0 == $process_registers{S} ) {
+        return undef;
     }
+    return $stack_heap[--$process_registers{S}];
+}
+
+sub base_dump_stack {
+    say("Stack dump: ", join ', ', (@stack_heap[0..$process_registers{S} - 1]));
     return undef;
 }
 
@@ -268,7 +196,74 @@ sub system_stack {
     return base_push_stack($_[0]);
 }
 
+# Translation hash to provide convenient names to the address modes for
+# memory addressing and for branch/jump targets in the Asm codes
+our %addressing = (
+    Absolute    => $address_mode{absolute},     # (A) Data address is the operand
+                                                #     Jump target is the opcode
+    Accumulator => $address_mode{accumulator},  # (I) No operand, implied accumulator
+    Direct      => $address_mode{direct},       # (I) Operand is the data itself, not an address (not used in write)
+    Indexed     => $address_mode{indexed},      # (X) Data address is I-register plus operand
+                                                #     Jump target is I-register plus (signed) operand 
+    Immediate   => $address_mode{immediate},    # (I) Operand is the data itself, not an address (not used in write)
+                                                #     Jump target is signed offset from C-register (after stepping)
+    Implied     => $address_mode{implied},      # (I) No operand, implied by the instruction
+    Indirect    => $address_mode{indirect},     # (P) The operand is a pointer to the address; operand -> memory -> data
+    Pointer     => $address_mode{pointer},      # (P) The operand is a pointer to the address; operand -> memory -> data
+                                                #     Jump target is the data at address operand
+    Reference   => $address_mode{reference},    # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
+    Relative    => $address_mode{relative},     # (R) The operand is a signed offset from C-register (after stepping)
+);                                              #     Jump target is the data at address I-register plus (signed) operand
+
 # Routines to handle the system memory
+sub base_load_memory {
+    @core_ram = @_;
+}
+
+sub base_write_memory {
+# Routine to write memory using the supplied operand and given address mode
+#   Arg 1 is Address mode
+#   Arg_2 is operand
+#   Arg_3 is the data to write
+    my ($addr_mode, $operand, $data) = @_;
+    if ($addr_mode == $addressing{Absolute} ) {
+        $core_ram[$operand] = $data;
+    } elsif ($addr_mode == $addressing{Indexed} ) {
+        $core_ram[$process_registers{I} + $operand] = $data;
+    } elsif ($addr_mode == $addressing{Pointer} ) {
+        $core_ram[$core_ram[$operand]] = $data;
+    } elsif ($addr_mode == $addressing{Reference} ) {
+        $core_ram[$core_ram[$process_registers{I} + $operand]] = $data;
+    } else {
+        return undef;
+    }
+    return 1;
+}
+
+sub base_read_memory {
+# Routine to read memory using the supplied operand and given address mode
+#   Arg 1 is Address mode
+#   Arg_2 is operand
+#   Return is the resolved value
+    my ($addr_mode, $operand) = @_;
+    if ($addr_mode == $addressing{Absolute} ) {
+        return $core_ram[$operand];
+    } elsif ($addr_mode == $addressing{Indexed} ) {
+        return $core_ram[$process_registers{I} + $operand];
+    } elsif ($addr_mode == $addressing{Pointer} ) {
+        return $core_ram[$core_ram[$operand]];
+    } elsif ($addr_mode == $addressing{Reference} ) {
+        return $core_ram[$core_ram[$process_registers{I} + $operand]];
+    } else {
+        return $operand;
+    }
+}
+
+sub base_dump_memory {
+    my $memory_dump = join(', ', (@core_ram));
+    say("Memory dump: $memory_dump");
+}
+
 # Exported routine for access the system memory
 sub system_memory {
 # Two arg version reads memory
@@ -365,7 +360,17 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 =head2 EXPORT
 
-None by default.
+	%registers
+	system_register
+	%flags
+	system_flag 
+	system_stack
+	%addressing
+	system_memory
+	program_init
+	program_length
+	program_next_code
+	program_set_address
 
 =head1 AUTHOR
 
