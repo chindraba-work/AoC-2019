@@ -81,6 +81,7 @@ our %address_mode = (
     reference   => 4, # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
     relative    => 5, # (R) The operand is a signed offset from C-register (after stepping)
                       #     Jump target is the data at address I-register plus (signed) operand
+    list        => 6, # (L) The operand is the pointer to a list, I-register is index into the list
 );
 our @program_code = (); # the executable section of memory
 

@@ -209,6 +209,7 @@ our %addressing = (
                                                 #     Jump target is signed offset from C-register (after stepping)
     Implied     => $address_mode{implied},      # (I) No operand, implied by the instruction
     Indirect    => $address_mode{indirect},     # (P) The operand is a pointer to the address; operand -> memory -> data
+    List        => $address_mode{list},         # (L) The operand is the pointer to a list, I-register is index into the list
     Pointer     => $address_mode{pointer},      # (P) The operand is a pointer to the address; operand -> memory -> data
                                                 #     Jump target is the data at address operand
     Reference   => $address_mode{reference},    # (R) The operand is an indexed pointer to the address [I + operand] -> memory -> data
@@ -230,6 +231,8 @@ sub base_write_memory {
         $core_ram[$operand] = $data;
     } elsif ($addr_mode == $addressing{Indexed} ) {
         $core_ram[$process_registers{I} + $operand] = $data;
+    } elsif ($addr_mode == $addressing{List} ) {
+        $core_ram[$process_registers{I} + $core_ram[$operand]] = $data;
     } elsif ($addr_mode == $addressing{Pointer} ) {
         $core_ram[$core_ram[$operand]] = $data;
     } elsif ($addr_mode == $addressing{Reference} ) {
@@ -250,6 +253,8 @@ sub base_read_memory {
         return $core_ram[$operand];
     } elsif ($addr_mode == $addressing{Indexed} ) {
         return $core_ram[$process_registers{I} + $operand];
+    } elsif ($addr_mode == $addressing{List} ) {
+        return $core_ram[$process_registers{I} + $core_ram[$operand]];
     } elsif ($addr_mode == $addressing{Pointer} ) {
         return $core_ram[$core_ram[$operand]];
     } elsif ($addr_mode == $addressing{Reference} ) {
@@ -300,6 +305,8 @@ sub base_code_address {
         return $process_registers{C} + $operand;
     } elsif ($addr_mode == $addressing{Indexed} ) {
         return $process_registers{I} + $operand;
+    } elsif ($addr_mode == $addressing{List} ) {
+        return $process_registers{I} + $core_ram[$operand];
     } elsif ($addr_mode == $addressing{Indirect} ) {
         return $core_ram[$operand];
     } elsif ($addr_mode == $addressing{Relative} ) {
