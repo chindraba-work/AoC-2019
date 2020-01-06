@@ -15,9 +15,11 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
     boot_system
     init_program
+    load_program
     init_memory
+    load_memory
     launch_application
-    autostart 
+    autostart
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -34,9 +36,17 @@ sub init_memory {
     memory_load(@memory_data);
 }
 
+sub load_memory {
+    memory_load(@_);
+}
+
 sub init_program {
     @program_code = read_lines($_[0]);
     program_load(@program_code);
+}
+
+sub load_program {
+    program_load(@_);
 }
 
 sub boot_system {
@@ -74,9 +84,11 @@ computing needs of the elves in the 2019 Advent of Code challenges.
 
     boot_system
     init_program
+    load_program
     init_memory
+    load_memory
     launch_application
-    autostart 
+    autostart
 
 =head1 AUTHOR
 
