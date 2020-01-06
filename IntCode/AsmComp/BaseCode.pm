@@ -310,7 +310,7 @@ sub base_code_address {
     } elsif ($addr_mode == $addressing{Indirect} ) {
         return $core_ram[$operand];
     } elsif ($addr_mode == $addressing{Relative} ) {
-        return $core_ram[$process_registers{I} + $operand];
+        return $process_registers{C} + $operand;
     } else {
         return $operand;
     }
