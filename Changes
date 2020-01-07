@@ -4,6 +4,7 @@ Revision history for 2019 Advent of Code challenges
     Day 2 challenge. Intcode computer
     Build a "backend" for the elves computer
     Run Day 1 challenge on the computer
+    Add work around for unsafe INC to the solutions
 
 0.01.01
     Updated requirements to fuel calculations

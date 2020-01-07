@@ -6,9 +6,17 @@ The challenges can be reviewed at [https://adventofcode.com/2019](https://advent
 
 Unlike other repos I produce, this will not use [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It seems pointless to do so. Rather changes will be tracked based on the "Day" of the challenge they come from. Hopefully, by day 25, the code for day 1 will still work.
 
-To run these scripts locally, the current directory needs to be in the `@INC` list, which was the default, but has been changed for security concerns. That change can be reversed by using the Bash command `export PERL_USE_UNSAFE_INC=1`, or by adding the line `use lib "."` to the main launching Perl file. Of course, the safe choice is to add the directories from the repo to your `site_perl` directory. That's a good option for my development, not so good for someone wanting to test my code.
+~~To run these scripts locally, the current directory needs to be in the `@INC` list, which was the default, but has been changed for security concerns. That change can be reversed by using the Bash command `export PERL_USE_UNSAFE_INC=1`, or by adding the line `use lib "."` to the main launching Perl file. Of course, the safe choice is to add the directories from the repo to your `site_perl` directory. That's a good option for my development, not so good for someone wanting to test my code.~~
 
 Day Two involves creating a computer to run "Intcode" programs. This will be a long project for me as I'm not trying to gain points, but want to have fun. This "computer" ought to be a nice challenge if done right.
+
+Built a "computer" to use as the backend for the Elf computer. It is a very loose adaptation of the 6502 chip assembly codes. The functionality of this computer is accessed by adding `use IntCode::AsmComp;` to a Perl file. The IntCode directory is where I will also build the ElfComp computer to use the AsmComp.
+
+As a test of the AsmComp, and for fun, the challenges from Day 1 was recoded to use the AsmComp assembly codes. They both work well, and as assembly code are much shorter than the original Perl file. Of course that ignores the size of the code supporting the AsmComp.
+
+I can see the size of the root directory growing as the Day count climbs, and should consider some kind of menu system in the root and move the challenges to a subdirectory. Maybe....
+
+The need to modify the environment, or the files, has been removed by using the `use inc '.';` work around in the main files myself. Having a menu system, maybe even a yearly directory setup, can simplify this as well. Future project, maybe.
 
 # Copyright and License
 

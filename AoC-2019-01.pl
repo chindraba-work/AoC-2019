@@ -37,6 +37,7 @@
 use 5.026001;
 use strict;
 use warnings;
+use lib '.';
 use Elves::FuelCounterUpper;
 
 our $show_progress = 1;

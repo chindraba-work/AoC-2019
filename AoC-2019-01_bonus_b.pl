@@ -37,6 +37,7 @@
 use 5.026001;
 use strict;
 use warnings;
+use lib '.';
 use IntCode::AsmComp;
 use Elves::GetData qw( read_lines );
 use Data::Dumper qw(Dumper);
