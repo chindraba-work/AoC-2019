@@ -129,7 +129,8 @@ my %asmcode = (
     BNE => sub { branch(0, 'Z'); },
     BPL => sub { branch(0, 'N'); },
     BRK => sub {
-        system_stack(system_register('C') + 2);
+        program_next_code();
+        system_stack(system_register('C'));
         system_stack(system_register('F'));
         system_flag('I', 1);
         core_dump();
@@ -310,11 +311,30 @@ sub program_load {
     program_init(@_);
 }
 
-sub program_run {
+sub run_code {
     while ( ! system_flag('I') && ! system_flag('B') && system_register('C') < program_length() ) {
         $asmcode{program_next_code()}();
     }
 }
+
+sub program_run {
+    map {
+        system_register($_, 0);
+    } qw(A C I S F X D);
+    run_code();
+    return 1 if ( system_flag('B') );
+    return 0 if ( system_flag('I') );
+    return undef;
+}
+
+sub program_resume {
+    $asmcode{'RTI'}();
+    run_code;
+    return 1 if ( system_flag('B') );
+    return 0 if ( system_flag('I') );
+    return undef;
+}
+
 
 1;
 __END__
