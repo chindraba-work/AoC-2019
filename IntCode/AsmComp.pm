@@ -19,6 +19,8 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
     init_memory
     load_memory
     launch_application
+    resume_application
+    step_application
     autostart
 ) ] );
 
@@ -55,12 +57,20 @@ sub boot_system {
 }
 
 sub launch_application {
-    program_run();
+    return program_run();
+}
+
+sub resume_application {
+    return program_resume();
+}
+
+sub step_application {
+    return program_step();
 }
 
 sub autostart {
     boot_system(@_);
-    launch_application;
+    return launch_application;
 }
 
 
@@ -88,6 +98,8 @@ computing needs of the elves in the 2019 Advent of Code challenges.
     init_memory
     load_memory
     launch_application
+    resume_application
+    step_application
     autostart
 
 =head1 AUTHOR

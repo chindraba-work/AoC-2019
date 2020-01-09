@@ -14,7 +14,9 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	program_load
 	memory_load
+    program_resume
 	program_run
+    program_step
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -335,6 +337,16 @@ sub program_resume {
     return undef;
 }
 
+sub program_step {
+    return program_run() 
+        if ( 0 == system_register('S');
+    $asmcode{'RTI'}();
+    system_register('C', 0);
+    run_code;
+    return 1 if ( system_flag('B') );
+    return 0 if ( system_flag('I') );
+    return undef;
+}
 
 1;
 __END__
@@ -356,7 +368,9 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 	program_load
 	memory_load
+    program_resume
 	program_run
+    program_step
 
 =head1 AUTHOR
 
