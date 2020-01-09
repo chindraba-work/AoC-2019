@@ -89,12 +89,7 @@ sub core_dump {
 
 # Routines to implement the assembly codes in a common manner
 my %asmcode = (
-    ABT => sub {
-        core_dump();
-        system_flag('I', 1);
-        system_flag('B', 1);
-        exit;
-    },
+    ABT => sub { core_dump(); exit; },
     ADC => sub {
         set_operand();
         system_register('A', system_register('A') + get_memory());
@@ -136,9 +131,8 @@ my %asmcode = (
     BRK => sub {
         system_stack(system_register('C') + 2);
         system_stack(system_register('F'));
-        core_dump();
         system_flag('I', 1);
-        system_flag('B', 1);
+        core_dump();
     },
     BVC => sub { branch(0, 'V'); },
     BVS => sub { branch(1, 'V'); },
@@ -279,7 +273,10 @@ my %asmcode = (
     SEI => sub { system_flag('I', 1); },
     STA => sub { store_register('A'); },
     STI => sub { store_register('I'); },
-    STP => sub { core_dump(); exit; },
+    STP => sub { 
+        system_flag('B', 1);
+        core_dump(); 
+    },
     STX => sub { store_register('X'); },
     TAI => sub { copy_register('A', 'I', 1); },
     TAX => sub { copy_register('A', 'X', 1); },
