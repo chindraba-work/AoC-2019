@@ -13,9 +13,10 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-    elf_launch
+	elf_launch
+	enable_dump
 	load_code_file
-    terminal_memory_access
+	terminal_memory_access
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -27,6 +28,14 @@ our $VERSION = '0.01.02';
 my $stopped;
 
 *terminal_memory_access = *IntCode::ElfComp::ElfCodes::memory_terminal;
+
+sub enable_dump {
+    if ( 0 < @_  && 1 == $_[0] ) {
+        raw_asm('SED');
+    } else {
+        raw_asm('CLD');
+    }
+}
 
 sub load_code_file {
     load_code(read_comma_list(@_));
@@ -55,7 +64,10 @@ Code challenges for 2019.
 
 =head2 EXPORT
 
-    load_code_file 
+    elf_launch
+    enable_dump
+    load_code_file
+    terminal_memory_access
 
 =head1 AUTHOR
 

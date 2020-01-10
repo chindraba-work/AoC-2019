@@ -15,6 +15,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
     boot_system
     access_memory
+    command
     init_program
     load_program
     init_memory
@@ -35,6 +36,7 @@ my @memory_data;
 my @program_code;
 
 *access_memory      = *IntCode::AsmComp::AsmCodes::direct_memory_access;
+*command            = *IntCode::AsmComp::AsmCodes::one_shot;
 *launch_application = *IntCode::AsmComp::AsmCodes::program_run;
 *load_memory        = *IntCode::AsmComp::AsmCodes::memory_load;
 *load_program       = *IntCode::AsmComp::AsmCodes::program_load;
@@ -86,6 +88,7 @@ computing needs of the elves in the 2019 Advent of Code challenges.
 
     boot_system
     access_memory
+    command
     init_program
     load_program
     init_memory

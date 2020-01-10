@@ -14,10 +14,11 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	program_load
 	memory_load
-    direct_memory_access
-    program_resume
+	direct_memory_access
+	program_resume
 	program_run
-    program_step
+	program_step
+	one_shot
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -144,7 +145,8 @@ my %asmcode = (
         system_stack(system_register('C'));
         system_stack(system_register('F'));
         system_flag('I', 1);
-        core_dump();
+        core_dump()
+            if ( system_flag('D') );
     },
     BVC => sub { branch(0, 'V'); },
     BVS => sub { branch(1, 'V'); },
@@ -287,7 +289,8 @@ my %asmcode = (
     STI => sub { store_register('I'); },
     STP => sub { 
         system_flag('B', 1);
-        core_dump(); 
+        core_dump()
+            if ( system_flag('D') );
     },
     STX => sub { store_register('X'); },
     TAI => sub { copy_register('A', 'I', 1); },
@@ -324,10 +327,14 @@ sub run_code {
     }
 }
 
+sub one_shot {
+    $asmcode{$_[0]}();
+}
+
 sub program_run {
     map {
         system_register($_, 0);
-    } qw(A C I S F X D);
+    } qw(A C I S X D);
     run_code();
     return 1 if ( system_flag('B') );
     return 0 if ( system_flag('I') );
@@ -377,6 +384,7 @@ needed by the elves in the 2019 Advent of Code challenges.
     program_resume
 	program_run
     program_step
+    one_shot
 
 =head1 AUTHOR
 

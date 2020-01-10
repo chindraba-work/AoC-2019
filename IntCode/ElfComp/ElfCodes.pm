@@ -15,6 +15,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw (
     elf_step
     load_code
     memory_terminal
+    raw_asm
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -25,6 +26,7 @@ our $VERSION = '0.01.02';
 
 *load_code       = *IntCode::AsmComp::load_memory;
 *memory_terminal = *IntCode::AsmComp::access_memory;
+*raw_asm         = *IntCode::AsmComp::command;
 
 my $elf_index = 0;
 
@@ -74,6 +76,7 @@ the AsmComp computer. Part of the 2019 Advent of Code challenges.
     elf_step
     load_code
     memory_terminal
+    raw_asm
 
 =head1 AUTHOR
 
