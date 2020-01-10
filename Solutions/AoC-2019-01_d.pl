@@ -37,12 +37,10 @@
 use 5.026001;
 use strict;
 use warnings;
-use lib '.';
 use IntCode::AsmComp;
 use Elves::GetData qw( read_lines );
 
-my $data_file = "Data/AoC-2019-01_a.txt";
-my @module_data = read_lines($data_file);
+my @module_data = read_lines($main::data_file);
 load_memory @module_data;
 my $module_count_value = @module_data;
 
@@ -54,7 +52,9 @@ my (
     $fuel_factor,
     $fuel_adjust,
     $running_total_fuel,
-) = (100..105);
+    $current_mass,
+    $module_total_fuel,
+) = (100..110);
 
 my @code_set = (
     LDA => Immediate => $fuel_factor_value,
@@ -68,17 +68,30 @@ my @code_set = (
     LDA => Immediate => 0,
     STA => Absolute => $running_total_fuel,
     CMP => Absolute => $module_count,
-    BPL => Absolute => 57,
+    BPL => Relative => 51,
     TAI =>
     LDA => List => $mass_list,
+    STA => Absolute => $current_mass,
+    LDA => Immediate => 0,
+    STA => Absolute => $module_total_fuel,
+    LDA => Absolute => $current_mass,
     DIV => Absolute => $fuel_factor,
     SBC => Absolute => $fuel_adjust,
+    BMI => Relative => 12,
+    STA => Absolute => $current_mass,
+    ADC => Absolute => $module_total_fuel,
+    STA => Absolute => $module_total_fuel,
+    JMP => Relative => -24,
+    LDA => Absolute => $module_total_fuel,
     ADC => Absolute => $running_total_fuel,
     STA => Absolute => $running_total_fuel,
     INI =>
     TIA =>
-    JMP => Absolute => 30,
+    JMP => Relative => -57,
     OUT => Absolute => $running_total_fuel,
 );
 load_program @code_set;
+
 launch_application;
+
+1;

@@ -57,6 +57,7 @@ our $VERSION = '0.01.00';
 
 my $fuel_factor = 3;
 my $fuel_adjust = 2;
+my $total_version;
 
 my $fuel_table_format = "| %11u | %13u |";
 my $fuel_table_header = "| Module Mass | Fuel Required |";
@@ -81,7 +82,12 @@ sub real_mass_to_fuel {
 
 sub find_module_fuel_cost {
     my $mass = shift;
-    my $fuel = real_mass_to_fuel $mass;
+    my $fuel;
+    if ( 'long' eq $total_version ) {
+        $fuel = real_mass_to_fuel $mass;
+    } else {
+        $fuel = mass_to_fuel $mass;
+    }
     say sprintf $fuel_table_format, $mass, $fuel if $main::show_progress;
     return $fuel;
 }
@@ -97,6 +103,7 @@ sub find_fuel_total {
 
 sub fuel_counter_upper {
     my $data_file = shift;
+    $total_version = shift;
     if ($main::show_progress) {
         say $fuel_table_marker;
         say $fuel_table_header;

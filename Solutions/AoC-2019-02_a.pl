@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2020  Chindraba (Ronald Lamoreaux)                      #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -37,62 +37,19 @@
 use 5.026001;
 use strict;
 use warnings;
-use lib '.';
-use IntCode::AsmComp;
-use Elves::GetData qw( read_lines );
-use Data::Dumper qw(Dumper);
+use IntCode::ElfComp;
 
-my $data_file = "Data/AoC-2019-01_a.txt";
-my @module_data = read_lines($data_file);
-load_memory @module_data;
-my $module_count_value = @module_data;
+# load the given program into memory
+load_code_file($main::data_file);
 
-my ($fuel_factor_value, $fuel_adjust_value) = (3,2);
-my (
-    $mass_list,
-    $fuel_list,
-    $module_count,
-    $fuel_factor,
-    $fuel_adjust,
-    $running_total_fuel,
-    $current_mass,
-    $module_total_fuel,
-) = (100..110);
+# modify the program as instructed in the challenge
+terminal_memory_access(1,12);
+terminal_memory_access(2,2);
 
-my @code_set = (
-    LDA => Immediate => $fuel_factor_value,
-    STA => Absolute => $fuel_factor,
-    LDA => Immediate => $fuel_adjust_value,
-    STA => Absolute => $fuel_adjust,
-    LDA => Immediate => $module_count_value,
-    STA => Absolute => $module_count,
-    LDA => Immediate => 0,
-    STA => Absolute => $mass_list,
-    LDA => Immediate => 0,
-    STA => Absolute => $running_total_fuel,
-    CMP => Absolute => $module_count,
-    BPL => Relative => 51,
-    TAI =>
-    LDA => List => $mass_list,
-    STA => Absolute => $current_mass,
-    LDA => Immediate => 0,
-    STA => Absolute => $module_total_fuel,
-    LDA => Absolute => $current_mass,
-    DIV => Absolute => $fuel_factor,
-    SBC => Absolute => $fuel_adjust,
-    BMI => Relative => 12,
-    STA => Absolute => $current_mass,
-    ADC => Absolute => $module_total_fuel,
-    STA => Absolute => $module_total_fuel,
-    JMP => Relative => -24,
-    LDA => Absolute => $module_total_fuel,
-    ADC => Absolute => $running_total_fuel,
-    STA => Absolute => $running_total_fuel,
-    INI =>
-    TIA =>
-    JMP => Relative => -57,
-    OUT => Absolute => $running_total_fuel,
-);
-load_program @code_set;
-# say Dumper(@code_set);
-launch_application;
+# run the program
+elf_launch();
+
+say "\nProgram answer is ",terminal_memory_access(0);
+
+
+1;

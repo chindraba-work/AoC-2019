@@ -37,13 +37,48 @@
 use 5.026001;
 use strict;
 use warnings;
-use lib '.';
-use Elves::FuelCounterUpper;
+use IntCode::AsmComp;
+use Elves::GetData qw( read_lines );
 
-our $show_progress = 1;
-our $aoc_day = 1;
-our $aoc_version = "a";
+my @module_data = read_lines($main::data_file);
+load_memory @module_data;
+my $module_count_value = @module_data;
 
-my $puzzle_data_file = sprintf "Data/AoC-2019-%02u_%s.txt", $aoc_day, $aoc_version;
+my ($fuel_factor_value, $fuel_adjust_value) = (3,2);
+my (
+    $mass_list,
+    $fuel_list,
+    $module_count,
+    $fuel_factor,
+    $fuel_adjust,
+    $running_total_fuel,
+) = (100..105);
 
-my $day_1_answer = fuel_counter_upper $puzzle_data_file;
+my @code_set = (
+    LDA => Immediate => $fuel_factor_value,
+    STA => Absolute => $fuel_factor,
+    LDA => Immediate => $fuel_adjust_value,
+    STA => Absolute => $fuel_adjust,
+    LDA => Immediate => $module_count_value,
+    STA => Absolute => $module_count,
+    LDA => Immediate => 0,
+    STA => Absolute => $mass_list,
+    LDA => Immediate => 0,
+    STA => Absolute => $running_total_fuel,
+    CMP => Absolute => $module_count,
+    BPL => Absolute => 57,
+    TAI =>
+    LDA => List => $mass_list,
+    DIV => Absolute => $fuel_factor,
+    SBC => Absolute => $fuel_adjust,
+    ADC => Absolute => $running_total_fuel,
+    STA => Absolute => $running_total_fuel,
+    INI =>
+    TIA =>
+    JMP => Absolute => 30,
+    OUT => Absolute => $running_total_fuel,
+);
+load_program @code_set;
+launch_application;
+
+1;

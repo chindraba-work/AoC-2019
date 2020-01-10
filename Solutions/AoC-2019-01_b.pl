@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2020  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2019  Chindraba (Ronald Lamoreaux)                      #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -37,24 +37,12 @@
 use 5.026001;
 use strict;
 use warnings;
-use lib '.';
-use IntCode::ElfComp;
+use Elves::FuelCounterUpper;
 
-our $aoc_day = 2;
-our $aoc_version = "a";
+our $show_progress = 0;
 
-my $puzzle_data_file = sprintf "Data/AoC-2019-%02u.txt", $aoc_day;
+my $puzzle_data_file = $main::data_file;
 
-# load the given program into memory
-load_code_file($puzzle_data_file);
+my $day_1_answer = fuel_counter_upper $puzzle_data_file, 'long';
 
-# modify the program as instructed in the challenge
-terminal_memory_access(1,12);
-terminal_memory_access(2,2);
-
-# run the program
-elf_launch();
-
-say "\nProgram answer is ",terminal_memory_access(0);
-
-
+1;
