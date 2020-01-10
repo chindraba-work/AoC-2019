@@ -14,6 +14,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	program_load
 	memory_load
+    direct_memory_access
     program_resume
 	program_run
     program_step
@@ -27,6 +28,8 @@ our $VERSION = '0.01.02';
 
 my $access_mode;
 my $operand;
+
+*program_load = *IntCode::AsmComp::BaseCode::program_init;
 
 sub set_operand {
     $access_mode = $addressing{program_next_code()};
@@ -52,6 +55,12 @@ sub set_memory {
 
 sub get_memory {
     return system_memory($access_mode, $operand);
+}
+
+sub direct_memory_access {
+    system_memory($addressing{Absolute}, $_[0], $_[1])
+        if ( 2 == @_ );
+    return system_memory($addressing{Absolute}, $_[0]);
 }
 
 sub memory_check {
@@ -309,10 +318,6 @@ sub memory_load {
     load_memory(@_, 0, 0, 0 );
 };
 
-sub program_load {
-    program_init(@_);
-}
-
 sub run_code {
     while ( ! system_flag('I') && ! system_flag('B') && system_register('C') < program_length() ) {
         $asmcode{program_next_code()}();
@@ -339,7 +344,7 @@ sub program_resume {
 
 sub program_step {
     return program_run() 
-        if ( 0 == system_register('S');
+        if ( 0 == system_register('S') );
     $asmcode{'RTI'}();
     system_register('C', 0);
     run_code;
@@ -368,6 +373,7 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 	program_load
 	memory_load
+    direct_memory_access
     program_resume
 	program_run
     program_step

@@ -14,6 +14,7 @@ our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
     boot_system
+    access_memory
     init_program
     load_program
     init_memory
@@ -33,13 +34,19 @@ our $VERSION = '0.01.02';
 my @memory_data;
 my @program_code;
 
+*access_memory      = *IntCode::AsmComp::AsmCodes::direct_memory_access;
+*launch_application = *IntCode::AsmComp::AsmCodes::program_run;
+*load_memory        = *IntCode::AsmComp::AsmCodes::memory_load;
+*load_program       = *IntCode::AsmComp::AsmCodes::program_load;
+*resume_application = *IntCode::AsmComp::AsmCodes::program_resume;
+*step_application   = *IntCode::AsmComp::AsmCodes::program_step;
+#sub access_memory {
+#    return direct_memory_access(@_);
+#}
+
 sub init_memory {
     @memory_data = read_lines($_[0]);
     memory_load(@memory_data);
-}
-
-sub load_memory {
-    memory_load(@_);
 }
 
 sub init_program {
@@ -47,30 +54,15 @@ sub init_program {
     program_load(@program_code);
 }
 
-sub load_program {
-    program_load(@_);
-}
-
 sub boot_system {
     init_memory($_[0]);
     init_program($_[1]) if ( 2 == @_ );
 }
 
-sub launch_application {
-    return program_run();
-}
-
-sub resume_application {
-    return program_resume();
-}
-
-sub step_application {
-    return program_step();
-}
 
 sub autostart {
     boot_system(@_);
-    return launch_application;
+    return launch_application();
 }
 
 
@@ -93,6 +85,7 @@ computing needs of the elves in the 2019 Advent of Code challenges.
 =head2 EXPORT
 
     boot_system
+    access_memory
     init_program
     load_program
     init_memory
