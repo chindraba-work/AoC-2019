@@ -18,9 +18,13 @@ I can see the size of the root directory growing as the Day count climbs, and sh
 
 The need to modify the environment, or the files, has been removed by using the `use inc '.';` work around in the main files myself. Having a menu system, maybe even a yearly directory setup, can simplify this as well. Future project, maybe.
 
+To simplify reading for interested parties, the instructions for the challenges have been reproduced here, in the Challenges directory. I was going to edit them to remove the answers, but realized that there was no point in doing so as the code to create those answers is right here anyway.
+
 # Copyright and License
 
 The MIT license applies to all the code within this repository.
+
+The entire text, and ideas, of the challenges are Copyright [Eric Wastl](https://twitter.com/ericwastl).
 
 ```
 Copyright © 2019  Chindraba (Ronald Lamoreaux)
