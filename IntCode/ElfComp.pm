@@ -17,6 +17,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	enable_dump
 	load_code_file
 	terminal_memory_access
+	warm_boot
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -28,6 +29,7 @@ our $VERSION = '0.01.02';
 my $stopped;
 
 *terminal_memory_access = *IntCode::ElfComp::ElfCodes::memory_terminal;
+*warm_boot              = *IntCode::ElfComp::ElfCodes::restart;
 
 sub enable_dump {
     if ( 0 < @_  && 1 == $_[0] ) {
@@ -42,6 +44,7 @@ sub load_code_file {
 }
 
 sub elf_launch {
+    $stopped = undef;
     $stopped = elf_step()
         until $stopped;
 }
@@ -68,6 +71,7 @@ Code challenges for 2019.
     enable_dump
     load_code_file
     terminal_memory_access
+    warm_boot
 
 =head1 AUTHOR
 

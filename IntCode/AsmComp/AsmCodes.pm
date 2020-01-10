@@ -19,6 +19,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	program_run
 	program_step
 	one_shot
+	soft_start
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -331,6 +332,16 @@ sub one_shot {
     $asmcode{$_[0]}();
 }
 
+sub soft_start {
+    map {
+        system_register($_, 0);
+    } qw(A C I S X D);
+    map {
+        system_flag($_, 0);
+    } qw(N V B I Z C);
+    system_memory( (0) x4 );
+}
+
 sub program_run {
     map {
         system_register($_, 0);
@@ -385,6 +396,7 @@ needed by the elves in the 2019 Advent of Code challenges.
 	program_run
     program_step
     one_shot
+    soft_start
 
 =head1 AUTHOR
 

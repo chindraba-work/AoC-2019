@@ -16,6 +16,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw (
     load_code
     memory_terminal
     raw_asm
+    restart
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -43,6 +44,11 @@ my %elf_asm = (
             STA => Absolute => elf_next(),
         )},
 );
+
+sub restart {
+    reboot();
+    $elf_index = 0;
+}
 
 sub elf_next {
     return memory_terminal($elf_index++);
@@ -77,6 +83,7 @@ the AsmComp computer. Part of the 2019 Advent of Code challenges.
     load_code
     memory_terminal
     raw_asm
+    restart
 
 =head1 AUTHOR
 

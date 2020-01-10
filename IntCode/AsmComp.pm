@@ -24,6 +24,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
     resume_application
     step_application
     autostart
+    reboot
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -40,6 +41,7 @@ my @program_code;
 *launch_application = *IntCode::AsmComp::AsmCodes::program_run;
 *load_memory        = *IntCode::AsmComp::AsmCodes::memory_load;
 *load_program       = *IntCode::AsmComp::AsmCodes::program_load;
+*reboot             = *IntCode::AsmComp::AsmCodes::soft_start;
 *resume_application = *IntCode::AsmComp::AsmCodes::program_resume;
 *step_application   = *IntCode::AsmComp::AsmCodes::program_step;
 #sub access_memory {
@@ -97,6 +99,7 @@ computing needs of the elves in the 2019 Advent of Code challenges.
     resume_application
     step_application
     autostart
+    reboot
 
 =head1 AUTHOR
 
