@@ -42,7 +42,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.19.02';
+our $VERSION = '0.19.05';
 
 our %process_registers = (
     F => 0, # flags register [NV-BDIZC]
@@ -52,13 +52,14 @@ our %process_registers = (
     A => 0, # accumulator
     X => 0, # X register
     D => 0, # data register, used as the second value for math ops
+            # and as return value to API for external processing
 );
 our %status_flags = ( # bitmap masks for contents of F register $reg{F};
     N => 1 << 7,  # Negative
     V => 1 << 6,  # Overflow (Not implemented here)
-    X => 1 << 5,  # Ignored
+    X => 1 << 5,  # Ignored (API signal to expose D register value)
     B => 1 << 4,  # Break
-    D => 1 << 3,  # Decimal (Not implemented here)
+    D => 1 << 3,  # Decimal (Repurposed as signal to dump core on BRK/STP)
     I => 1 << 2,  # Interrupt
     Z => 1 << 1,  # Zero
     C => 1 << 0,  # Carry (Not implemented here)

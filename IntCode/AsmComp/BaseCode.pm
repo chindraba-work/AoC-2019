@@ -42,6 +42,7 @@ our %register = (
     StatusRegister => 'F', # flags register [NV-BDIZC]
     X_Register     => 'X', # X register
     DataRegister   => 'D', # data register, used as the second value for math ops
+                           # and as return value to API for external processing
 );
 
 sub base_load_register {
@@ -83,8 +84,9 @@ sub system_register{
 our %flags = (
     Negative  => 'N', # Negative
     Overflow  => 'V', # Overflow (Not implemented here)
+    Expose    => 'X', # Expose signal to API
     Break     => 'B', # Break
-    Decimal   => 'D', # Decimal (Not implemented here)
+    Decimal   => 'D', # Decimal (Repurposed as signal to dump core on BRK/STP)
     Interrupt => 'I', # Interrupt
     Zero      => 'Z', # Zero
     Carry     => 'C', # Carry (Not implemented here)
