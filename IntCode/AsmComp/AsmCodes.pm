@@ -26,7 +26,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.01.02';
+our $VERSION = '0.01.05';
 
 my $access_mode;
 my $operand;
@@ -232,6 +232,38 @@ my %asmcode = (
         set_operand();
         system_register('A', system_register('A') * get_memory());
         register_check('A');
+    },
+    OPB => sub {
+        set_operand();
+        system_register('D', get_memory());
+        printf(
+            "%016b\n",
+            system_register('D')
+        );
+    },
+    OPD => sub {
+        set_operand();
+        system_register('D', get_memory());
+        printf(
+            "%d\n",
+            system_register('D')
+        );
+    },
+    OPH => sub {
+        set_operand();
+        system_register('D', get_memory());
+        printf(
+            "%08X\n",
+            system_register('D')
+        );
+    },
+    OPO => sub {
+        set_operand();
+        system_register('D', get_memory());
+        printf(
+            "%#o\n",
+            system_register('D')
+        );
     },
     ORA => sub {
         set_operand();
