@@ -14,7 +14,6 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
     %node_map
     $node_origin
     map_segment
-    node_compare
     node_manhattan
 ) ] );
 
@@ -50,11 +49,6 @@ sub node_manhattan {
 # The common point for comparing distances
 # Subject to change by the calling module
 our $node_origin;
-
-# Compare, for sorting purposes, two nodes based on their Manhattan Distance from a common point
-sub node_compare {
-    return node_manhattan($node_origin, $a) <=> node_manhattan($node_origin, $b);
-}
 
 # Routine to 'draw' on run of wire on the grid
 sub map_vector {
@@ -125,7 +119,6 @@ between points for sorting the list of cross overs.
     %node_map
     $node_origin
     map_segment
-    node_compare
     node_manhattan
 
 =head1 AUTHOR
