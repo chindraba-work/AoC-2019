@@ -48,6 +48,18 @@ my %elf_asm = (
             MUL => $mode_list[$parameter_mode[1]], elf_next(),
             STA => $mode_list[$parameter_mode[2]], elf_next(),
         )},
+    3 => sub {
+        print "ElfComp input: ";
+        $| =1;
+        $_ = <STDIN>;
+        chomp;
+        unshift(@ARGV, $_);
+        return (
+            INP => $mode_list[$parameter_mode[0]], elf_next(),
+        )},
+    4 => sub { return (
+            OPD => $mode_list[$parameter_mode[0]], elf_next(),
+        )},
 );
 
 sub restart {
