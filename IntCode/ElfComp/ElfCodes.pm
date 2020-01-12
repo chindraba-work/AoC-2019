@@ -29,19 +29,24 @@ our $VERSION = '0.01.02';
 *memory_terminal = *IntCode::AsmComp::access_memory;
 *raw_asm         = *IntCode::AsmComp::command;
 
-my $elf_index = 0;
+my ($elf_index, $op1, $op2, @parameter_mode) = (0) x 6;
+
+my @mode_list = qw(
+    Absolute
+    Immediate
+);
 
 my %elf_asm = (
     99 => sub { return ('STP'); },
     1 => sub { return (
-            LDA => Absolute => elf_next(),
-            ADC => Absolute => elf_next(),
-            STA => Absolute => elf_next(),
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            ADC => $mode_list[$parameter_mode[1]], elf_next(),
+            STA => $mode_list[$parameter_mode[2]], elf_next(),
         )},
     2 => sub { return (
-            LDA => Absolute => elf_next(),
-            MUL => Absolute => elf_next(),
-            STA => Absolute => elf_next(),
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            MUL => $mode_list[$parameter_mode[1]], elf_next(),
+            STA => $mode_list[$parameter_mode[2]], elf_next(),
         )},
 );
 
@@ -55,7 +60,8 @@ sub elf_next {
 }
 
 sub elf_step {
-    my @asm_snippet = $elf_asm{elf_next()}();
+    ($op2, $op1, @parameter_mode) = (reverse(split('', elf_next())),('0') x 5)[0..4];
+    my @asm_snippet = $elf_asm{10 * $op1 + $op2}();
     load_program(@asm_snippet);
     return step_application();
 }
