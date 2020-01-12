@@ -23,7 +23,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.01.02';
+our $VERSION = '0.19.02';
 
 *load_code       = *IntCode::AsmComp::load_memory;
 *memory_terminal = *IntCode::AsmComp::access_memory;

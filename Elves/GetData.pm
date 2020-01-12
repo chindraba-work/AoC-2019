@@ -22,7 +22,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01.01';
+our $VERSION = '0.19.01';
 
 # Presumption is that none of the data files will be extremely large,
 # and should be easily handled by system memory.

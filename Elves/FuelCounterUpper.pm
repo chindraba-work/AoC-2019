@@ -24,7 +24,7 @@ our @EXPORT = qw(
 	fuel_counter_upper
 );
 
-our $VERSION = '0.01.00';
+our $VERSION = '0.19.00';
 
 
 # Instructions:

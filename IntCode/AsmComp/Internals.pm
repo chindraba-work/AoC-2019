@@ -42,7 +42,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.01.02';
+our $VERSION = '0.19.02';
 
 our %process_registers = (
     F => 0, # flags register [NV-BDIZC]

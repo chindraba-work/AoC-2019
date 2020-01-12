@@ -6,6 +6,8 @@ The challenges can be reviewed at [https://adventofcode.com/2019](https://advent
 
 Unlike other repos I produce, this will not use [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It seems pointless to do so. Rather changes will be tracked based on the "Day" of the challenge they come from. Hopefully, by day 25, the code for day 1 will still work.
 
+The "version" numbers in the files indicate the "day" for which the code was built, or last modified, and the year of the challenge. As this is the first challenge I've done, I started with version 0.01.01. Having decided that I will probably try the older ones as well, I've switched, retroactively, the versions to be 0.19.01, for Day 1 of 2019 challenge. Since the Advent of Code challenges only go back to 2015 and I will likely not live to work on a challenge in 2100, that should cover any years which I work on. Of course being "Advent" the day will always be from 1 to 25 inclusive.
+
 ~~To run these scripts locally, the current directory needs to be in the `@INC` list, which was the default, but has been changed for security concerns. That change can be reversed by using the Bash command `export PERL_USE_UNSAFE_INC=1`, or by adding the line `use lib "."` to the main launching Perl file. Of course, the safe choice is to add the directories from the repo to your `site_perl` directory. That's a good option for my development, not so good for someone wanting to test my code.~~
 
 Day Two involves creating a computer to run "Intcode" programs. This will be a long project for me as I'm not trying to gain points, but want to have fun. This "computer" ought to be a nice challenge if done right.

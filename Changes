@@ -1,22 +1,22 @@
 Revision history for 2019 Advent of Code challenges
 
-0.01.04
+0.19.04
     Day 4 challenge, passwords
 
-0.01.03
+0.19.03
     Day 3 challenge, path work for wires
 
-0.01.02
+0.19.02
     Day 2 challenge. Intcode computer
     Build a "backend" for the elves computer
     Run Day 1 challenge on the computer
     Add work around for unsafe INC to the solutions
     Make new directory for solutions with a single launcher
 
-0.01.01
+0.19.01
     Updated requirements to fuel calculations
 
-0.01.00
+0.19.00
     Day 1 challenge. Fuel Counter-Upper
 
 
