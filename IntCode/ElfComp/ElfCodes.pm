@@ -6,6 +6,7 @@ use 5.026001;
 use strict;
 use warnings;
 use IntCode::AsmComp;
+use Data::Dumper 'Dumper';
 
 require Exporter;
 
@@ -60,6 +61,36 @@ my %elf_asm = (
     4 => sub { return (
             OPD => $mode_list[$parameter_mode[0]], elf_next(),
         )},
+    5 => sub { return (
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            BEQ => Relative => 4,
+            LDD => $mode_list[$parameter_mode[1]], elf_next(),
+            SEX =>
+        )},
+    6 => sub { return (
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            BNE => Relative => 4,
+            LDD => $mode_list[$parameter_mode[1]], elf_next(),
+            SEX =>
+        )},
+    7 => sub { return (
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            CMP => $mode_list[$parameter_mode[1]], elf_next(),
+            BMI => Relative => 6,
+            LDD => Immediate => 0,
+            JMP => Relative => 3,
+            LDD => Immediate => 1,
+            STD => $mode_list[$parameter_mode[2]], elf_next(),
+        )},
+    8 => sub { return (
+            LDA => $mode_list[$parameter_mode[0]], elf_next(),
+            CMP => $mode_list[$parameter_mode[1]], elf_next(),
+            BEQ => Relative => 6,
+            LDD => Immediate => 0,
+            JMP => Relative => 3,
+            LDD => Immediate => 1,
+            STD => $mode_list[$parameter_mode[2]], elf_next(),
+        )},
 );
 
 sub restart {
@@ -75,7 +106,10 @@ sub elf_step {
     ($op2, $op1, @parameter_mode) = (reverse(split('', elf_next())),('0') x 5)[0..4];
     my @asm_snippet = $elf_asm{10 * $op1 + $op2}();
     load_program(@asm_snippet);
-    return step_application();
+    my $trapper = step_application();
+    return $trapper unless ( defined $trapper && 1 < $trapper );
+    $elf_index = $trapper;
+    return undef;
 }
 
 
