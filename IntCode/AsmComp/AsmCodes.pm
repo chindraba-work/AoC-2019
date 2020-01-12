@@ -155,6 +155,7 @@ my %asmcode = (
     CLD => sub { system_flag('D', 0); },
     CLI => sub { system_flag('I', 0); },
     CLV => sub { system_flag('V', 0); },
+    CLX => sub { system_flag('X', 0); },
     CMP => sub {
         set_operand();
         system_register('D', system_register('A') - get_memory());
@@ -219,6 +220,7 @@ my %asmcode = (
         program_set_address($access_mode, $operand);
     },
     LDA => sub { load_register('A', 1); },
+    LDD => sub { load_register('D'); },
     LDF => sub { load_register('F'); },
     LDI => sub { load_register('I', 1); },
     LDS => sub { load_register('S', 1); },
@@ -318,7 +320,9 @@ my %asmcode = (
     SEC => sub { system_flag('C', 1); },
     SED => sub { system_flag('D', 1); },
     SEI => sub { system_flag('I', 1); },
+    SEX => sub { system_flag('X', 1); },
     STA => sub { store_register('A'); },
+    STD => sub { store_register('D'); },
     STI => sub { store_register('I'); },
     STP => sub { 
         system_flag('B', 1);
@@ -326,12 +330,16 @@ my %asmcode = (
             if ( system_flag('D') );
     },
     STX => sub { store_register('X'); },
-    TAI => sub { copy_register('A', 'I', 1); },
+    TAD => sub { copy_register('A', 'D'); },
+    TAI => sub { copy_register('A', 'I'); },
     TAX => sub { copy_register('A', 'X', 1); },
-    TIA => sub { copy_register('I', 'A'); },
-    TIX => sub { copy_register('I', 'X'); },
+    TDA => sub { copy_register('D', 'A', 1); },
+    TDX => sub { copy_register('D', 'X', 1); },
+    TIA => sub { copy_register('I', 'A', 1); },
+    TIX => sub { copy_register('I', 'X', 1); },
     TSX => sub { copy_register('S', 'X', 1); },
-    TXA => sub { copy_register('X', 'I', 1); },
+    TXA => sub { copy_register('X', 'A', 1); },
+    TXD => sub { copy_register('X', 'D'); },
     TXI => sub { copy_register('X', 'I'); },
     TXS => sub { copy_register('X', 'S'); },
 );
@@ -374,33 +382,32 @@ sub soft_start {
     system_memory( (0) x4 );
 }
 
-sub program_run {
-    map {
-        system_register($_, 0);
-    } qw(A C I S X D);
+sub code_execute {
+    system_flag('X', 0);
     run_code();
+    return system_register('D') if ( system_flag('X') );
     return 1 if ( system_flag('B') );
     return 0 if ( system_flag('I') );
     return undef;
 }
 
+sub program_run {
+    map {
+        system_register($_, 0);
+    } qw(A C I S X D);
+    code_execute();
+}
+
 sub program_resume {
     $asmcode{'RTI'}();
-    run_code;
-    return 1 if ( system_flag('B') );
-    return 0 if ( system_flag('I') );
-    return undef;
+    code_execute();
 }
 
 sub program_step {
     return program_run() 
         if ( 0 == system_register('S') );
     $asmcode{'RTI'}();
-    system_register('C', 0);
-    run_code;
-    return 1 if ( system_flag('B') );
-    return 0 if ( system_flag('I') );
-    return undef;
+    code_execute();
 }
 
 1;
