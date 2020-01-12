@@ -6,7 +6,6 @@ use 5.026001;
 use strict;
 use warnings;
 use Elves::GetData qw(read_lines);
-use Data::Dumper 'Dumper';
 
 require Exporter;
 
@@ -15,6 +14,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
 	    add_orbit
 	    orbit_checksum
+	    trace_route
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -60,6 +60,16 @@ sub orbit_checksum {
     return $running_sum;
 }
 
+sub trace_route {
+    my @route;
+    my $target = shift;
+    while ( 'COM' ne $target ) {
+        $target = $tail_map{$target};
+        unshift @route, $target;
+    }
+    return (@route);
+}
+
 1;
 __END__
 =head1 NAME
@@ -78,6 +88,7 @@ Calculate checksum of orbits recorded in the map
 
     add_orbit
     orbit_checksum
+    trace_route
 
 =head1 AUTHOR
 
