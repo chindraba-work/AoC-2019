@@ -1,5 +1,8 @@
 Revision history for 2019 Advent of Code challenges
 
+0.01.03
+    Day 3 challenge, path work for wires
+
 0.01.02
     Day 2 challenge. Intcode computer
     Build a "backend" for the elves computer
