@@ -12,9 +12,12 @@ our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
     %node_map
+    %step_map
     $node_origin
+    $step_count
     map_segment
     node_manhattan
+    node_steps
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -23,20 +26,21 @@ our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.01.03';
 
+our %step_map = (
+    A => {},
+    B => {},
+);
+
+our $step_count;
+
 our %node_map;
 
 # The multipliers for moving in a given direction
-my %h_shift = (
-    D => 0,
-    L => -1,
-    R => 1,
-    U => 0,
-);
-my %v_shift = (
-    D => -1,
-    L => 0,
-    R => 0,
-    U => 1,
+my %shifts = (
+    D => '0:-1',
+    L => '-1:0',
+    R => '1:0',
+    U => '0:1',
 );
 
 # Routine to find the Manhattan Distance between two nodes
@@ -46,35 +50,31 @@ sub node_manhattan {
     return abs($h_target - $h_origin) + abs($v_target - $v_origin);
 }
 
+sub node_steps {
+    return $step_map{A}{$_[1]} + $step_map{B}{$_[1]};
+}
+
 # The common point for comparing distances
 # Subject to change by the calling module
 our $node_origin;
-
 # Routine to 'draw' on run of wire on the grid
 sub map_vector {
-    my ($symbol, $h_pos, $v_pos, $delta, $vertical) = @_;
-    my ($first_pos, $last_pos, $node, $node_template, $step);
+# map_vector $_[2], $h_pos, $v_pos, $distance, $delta, $vertical;
+    my ($symbol, $h_pos, $v_pos, $distance, $factor, $vertical) = @_;
+    my ($first_pos, $node, $node_template);
     if ( $vertical ) {
         $node_template = "$h_pos:%d";
-        if ( 0 < $delta ) {
-            $first_pos = $v_pos;
-            $last_pos  = $v_pos + $delta;
-        } else {
-            $first_pos = $v_pos + $delta;
-            $last_pos  = $v_pos;
-        }
+        $first_pos = $v_pos + $factor;
     } else {
         $node_template = "%d:$v_pos";
-        if ( 0 < $delta ) {
-            $first_pos = $h_pos;
-            $last_pos  = $h_pos + $delta;
-        } else {
-            $first_pos = $h_pos + $delta;
-            $last_pos  = $h_pos;
-        }
+        $first_pos = $h_pos + $factor;
     }
-    for $step ($first_pos..$last_pos) {
-        $node = sprintf $node_template, $step;
+    for (my $step = 0; $step < $distance; $step++) {
+        $step_count++;
+        $node = sprintf $node_template, $first_pos + $factor * $step;
+        if ( ! defined $step_map{$symbol}{$node} ) {
+            $step_map{$symbol}{$node} = $step_count;
+        }
         if ( ! defined $node_map{$node} ) {
             $node_map{$node} = $symbol;
         } elsif ( $symbol ne $node_map{$node} ) {
@@ -87,14 +87,11 @@ sub map_vector {
 sub map_segment {
     my ($h_pos, $v_pos) = split ':', $_[0];
     my ($bearing, $distance) = ($_[1] =~ /([UDLR])(\d+)/);
-    my $h_delta = $h_shift{$bearing} * $distance;
-    my $v_delta = $v_shift{$bearing} * $distance;
-    if ( 0 != $h_delta ) {
-        map_vector $_[2], $h_pos, $v_pos, $h_delta, 0;
-    } else{
-        map_vector $_[2], $h_pos, $v_pos, $v_delta, 1;
-    }
-    return sprintf "%d:%d", $h_pos + $h_delta, $v_pos + $v_delta;
+    my ($h_shift, $v_shift) = split ':', $shifts{$bearing};
+    my $vertical = ( 0 == $h_shift )? 1 : 0;
+    my $delta = (( $vertical )? $v_shift : $h_shift);
+    map_vector $_[2], $h_pos, $v_pos, $distance, $delta, $vertical;
+    return sprintf "%d:%d", $h_pos + $h_shift * $distance, $v_pos + $v_shift * $distance;
 }
 
 1;
@@ -117,9 +114,12 @@ between points for sorting the list of cross overs.
 =head2 EXPORT
 
     %node_map
+    %step_map
     $node_origin
+    $step_count
     map_segment
     node_manhattan
+    node_steps
 
 =head1 AUTHOR
 
