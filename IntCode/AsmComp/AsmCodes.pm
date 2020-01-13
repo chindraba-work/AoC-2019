@@ -26,7 +26,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.19.05';
+our $VERSION = '0.19.07';
 
 my $access_mode;
 my $operand;
@@ -185,6 +185,19 @@ my %asmcode = (
         system_register('A', system_register('A') ^ get_memory());
         register_check('A');
     },
+    GET => sub {
+        set_operand();
+        while ( 0 == @ARGV ) {
+            sleep 1;
+        }
+        system_register('D', shift(@ARGV));
+        register_check('D');
+        if ( $access_mode == $addressing{Accumulator} ) {
+            system_register('A', system_register('D'));
+        } else {
+            system_memory($access_mode, $operand, system_register('D'));
+        }
+    },
     INC => sub {
         set_operand();
         my $value = get_memory();
@@ -239,40 +252,70 @@ my %asmcode = (
         set_operand();
         system_register('D', get_memory());
         printf(
-            "%016b\n",
+            "%016b",
             system_register('D')
         );
     },
     OPD => sub {
         set_operand();
         system_register('D', get_memory());
-        printf(
-            "%d\n",
+        unshift(@ARGV, sprintf(
+            "%d",
             system_register('D')
-        );
+        ));
     },
     OPH => sub {
         set_operand();
         system_register('D', get_memory());
-        printf(
-            "%08X\n",
+        unshift(@ARGV, sprintf(
+            "%08X",
             system_register('D')
-        );
+        ));
     },
     OPO => sub {
         set_operand();
         system_register('D', get_memory());
-        printf(
-            "%#o\n",
+        unshift(@ARGV, sprintf(
+            "%#o",
             system_register('D')
-        );
+        ));
+    },
+    OUT => sub {
+        set_operand();
+        system_register('D', get_memory());
+        unshift(@ARGV, sprintf(
+            "Program output: %1\$016b: %1\$u, (%1\$d)",
+            system_register('D')
+        ));
     },
     ORA => sub {
         set_operand();
         system_register('A', system_register('A') | get_memory());
         register_check('A');
     },
-    OUT => sub {
+    PHA => sub { system_stack(system_register('A')); },
+    PHP => sub { system_stack(system_register('F')); },
+    PHV => sub {
+        set_operand();
+        system_register('D', get_memory());
+        push(@ARGV, system_register('D'));
+    },
+    PLA => sub { 
+        system_register('A', system_stack());
+        register_check('A');
+    },
+    PLP => sub { system_register('F', system_stack()); },
+    PLV => sub {
+        set_operand();
+        system_register('D', pop(@ARGV));
+        register_check('D');
+        if ( $access_mode == $addressing{Accumulator} ) {
+            system_register('A', system_register('D'));
+        } else {
+            system_memory($access_mode, $operand, system_register('D'));
+        }
+    },
+    PRT => sub {
         set_operand();
         system_register('D', get_memory());
         printf(
@@ -280,13 +323,20 @@ my %asmcode = (
             system_register('D')
         );
     },
-    PHA => sub { system_stack(system_register('A')); },
-    PHP => sub { system_stack(system_register('F')); },
-    PLA => sub { 
-        system_register('A', system_stack());
-        register_check('A');
+    REA => sub {
+        set_operand();
+        print "AsmComp input: ";
+        $| =1;
+        $_ = <STDIN>;
+        chomp;
+        system_register('D', $_);
+        register_check('D');
+        if ( $access_mode == $addressing{Accumulator} ) {
+            system_register('A', system_register('D'));
+        } else {
+            system_memory($access_mode, $operand, system_register('D'));
+        }
     },
-    PLP => sub { system_register('F', system_stack()); },
     ROL => sub {
         set_operand();
         my $value = get_memory();

@@ -22,6 +22,7 @@ The need to modify the environment, or the files, has been removed by using the 
 
 To simplify reading for interested parties, the instructions for the challenges have been reproduced here, in the Challenges directory. I was going to edit them to remove the answers, but realized that there was no point in doing so as the code to create those answers is right here anyway.
 
+Further enhancements for the AsmComp backend made to overhaul the I/O relative to the ElfComp frontend, the managing Perl code, and the user's terminal. Updates to completed solutions (Days 1 - 6) to accomodate the changes where they "break" to developed solutions.
 # Copyright and License
 
 The MIT license applies to all the code within this repository.
