@@ -92,6 +92,12 @@ my @code_set = (
 );
 load_program @code_set;
 
+# clear @ARGV in preparation to receiving data there
+$#ARGV = -1;
+
 launch_application;
+
+# retrieve the output from @ARGV
+say shift @ARGV;
 
 1;

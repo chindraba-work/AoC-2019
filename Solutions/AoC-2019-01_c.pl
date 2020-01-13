@@ -76,7 +76,7 @@ my @code_set = (
     INI =>
     TIA =>
     JMP => Absolute => 30,
-    OUT => Absolute => $running_total_fuel,
+    PRT => Absolute => $running_total_fuel,
 );
 load_program @code_set;
 launch_application;
