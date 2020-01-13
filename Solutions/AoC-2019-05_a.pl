@@ -42,8 +42,13 @@ use IntCode::ElfComp;
 # load the given program into memory
 load_code_file($main::data_file);
 
+# Clear ARGV in preparation for using it with the ElfComp
+$#ARGV = -1;
+
 # run the program
 elf_launch();
 
+# Retrieve the results
+say join "\n", reverse(@ARGV);
 
 1;
