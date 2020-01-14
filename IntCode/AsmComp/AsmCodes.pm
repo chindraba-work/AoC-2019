@@ -326,10 +326,15 @@ my %asmcode = (
     REA => sub {
         set_operand();
         print "AsmComp input: ";
-        $| =1;
-        $_ = <STDIN>;
-        chomp;
-        system_register('D', $_);
+        if ( @ARGV ) {
+            system_register('D', unshift(@ARGV));
+            printf("%s\n", system_register('D'));
+        } else {
+            $| =1;
+            $_ = <STDIN>;
+            chomp;
+            system_register('D', $_);
+        }
         register_check('D');
         if ( $access_mode == $addressing{Accumulator} ) {
             system_register('A', system_register('D'));
