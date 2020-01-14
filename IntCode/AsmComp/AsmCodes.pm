@@ -251,10 +251,10 @@ my %asmcode = (
     OPB => sub {
         set_operand();
         system_register('D', get_memory());
-        printf(
+        unshift(@ARGV, sprintf(
             "%016b",
             system_register('D')
-        );
+        ));
     },
     OPD => sub {
         set_operand();
