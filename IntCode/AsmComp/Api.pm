@@ -1,11 +1,10 @@
-package IntCode::AsmComp;
+package IntCode::AsmComp::Api;
 
 # SPDX-License-Identifier: MIT
 
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw( read_lines );
 use IntCode::AsmComp::AsmCodes;
 
 require Exporter;
@@ -36,38 +35,15 @@ our $VERSION = '0.19.02';
 my @memory_data;
 my @program_code;
 
-*access_memory      = *IntCode::AsmComp::AsmCodes::direct_memory_access;
-*command            = *IntCode::AsmComp::AsmCodes::one_shot;
-*launch_application = *IntCode::AsmComp::AsmCodes::program_run;
-*load_memory        = *IntCode::AsmComp::AsmCodes::memory_load;
-*load_program       = *IntCode::AsmComp::AsmCodes::program_load;
 *reboot             = *IntCode::AsmComp::AsmCodes::soft_start;
+*load_program       = *IntCode::AsmComp::AsmCodes::program_load;
+*load_memory        = *IntCode::AsmComp::AsmCodes::memory_load;
+*launch_application = *IntCode::AsmComp::AsmCodes::program_run;
 *resume_application = *IntCode::AsmComp::AsmCodes::program_resume;
 *step_application   = *IntCode::AsmComp::AsmCodes::program_step;
-#sub access_memory {
-#    return direct_memory_access(@_);
-#}
+*access_memory      = *IntCode::AsmComp::AsmCodes::direct_memory_access;
+*command            = *IntCode::AsmComp::AsmCodes::one_shot;
 
-sub init_memory {
-    @memory_data = read_lines($_[0]);
-    memory_load(@memory_data);
-}
-
-sub init_program {
-    @program_code = read_lines($_[0]);
-    program_load(@program_code);
-}
-
-sub boot_system {
-    init_memory($_[0]);
-    init_program($_[1]) if ( 2 == @_ );
-}
-
-
-sub autostart {
-    boot_system(@_);
-    return launch_application();
-}
 
 
 1;
@@ -75,16 +51,17 @@ __END__
 
 =head1 NAME
 
-IntCode::AsmComp
+IntCode::AsmComp::Api
 
 =head1 SYNOPSIS
 
-  use IntCode::AsmComp;
+  use IntCode::AsmComp::Api;
 
 =head1 DESCRIPTION
 
-Operational interface to the Assembly computer, built to handle the
-computing needs of the elves in the 2019 Advent of Code challenges.
+Application programming interface to the Assembly computer, built to
+handle the computing needs of the elves in the 2019 Advent of Code
+challenges.
 
 =head2 EXPORT
 
