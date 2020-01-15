@@ -12,17 +12,13 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-    boot_system
     access_memory
     command
-    init_program
     load_program
-    init_memory
     load_memory
     launch_application
     resume_application
     step_application
-    autostart
     reboot
 ) ] );
 
@@ -30,10 +26,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.19.02';
-
-my @memory_data;
-my @program_code;
+our $VERSION = '0.19.07';
 
 *reboot             = *IntCode::AsmComp::AsmCodes::soft_start;
 *load_program       = *IntCode::AsmComp::AsmCodes::program_load;
@@ -43,8 +36,6 @@ my @program_code;
 *step_application   = *IntCode::AsmComp::AsmCodes::program_step;
 *access_memory      = *IntCode::AsmComp::AsmCodes::direct_memory_access;
 *command            = *IntCode::AsmComp::AsmCodes::one_shot;
-
-
 
 1;
 __END__
@@ -65,17 +56,13 @@ challenges.
 
 =head2 EXPORT
 
-    boot_system
     access_memory
     command
-    init_program
     load_program
-    init_memory
     load_memory
     launch_application
     resume_application
     step_application
-    autostart
     reboot
 
 =head1 AUTHOR
