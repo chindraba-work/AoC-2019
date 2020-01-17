@@ -57,9 +57,9 @@ our %process_registers = (
 our %status_flags = ( # bitmap masks for contents of F register $reg{F};
     N => 1 << 7,  # Negative
     V => 1 << 6,  # Overflow (Not implemented here)
-    X => 1 << 5,  # Ignored (API signal to expose D register value)
-    B => 1 << 4,  # Break
-    D => 1 << 3,  # Decimal (Repurposed as signal to dump core on BRK/STP)
+    D => 1 << 5,  # Decimal (Repurposed as signal to dump core on BRK/STP)
+    X => 1 << 4,  # Ignored (API signal to expose D register value)
+    B => 1 << 3,  # Break
     I => 1 << 2,  # Interrupt
     Z => 1 << 1,  # Zero
     C => 1 << 0,  # Carry (Not implemented here)
@@ -105,12 +105,12 @@ needed by the elves in the 2019 Advent of Code challenges.
 
 =head2 EXPORT
 
-        %process_registers
-        %status_flags
-        %address_mode
-        @stack_heap
-        @core_ram
-        @program_code
+	%process_registers
+	%status_flags
+	%address_mode
+	@stack_heap
+	@core_ram
+	@program_code
 
 =head1 AUTHOR
 
