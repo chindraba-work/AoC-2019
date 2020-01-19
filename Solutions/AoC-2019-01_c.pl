@@ -41,8 +41,7 @@ use IntCode::AsmComp;
 use Elves::GetData qw( read_lines );
 
 my @module_data = read_lines($main::data_file);
-load_memory @module_data;
-my $module_count_value = @module_data;
+my $module_count_value = @module_data; 
 
 my ($fuel_factor_value, $fuel_adjust_value) = (3,2);
 my (
@@ -76,9 +75,14 @@ my @code_set = (
     INI =>
     TIA =>
     JMP => Absolute => 30,
-    PRT => Absolute => $running_total_fuel,
+    OTD => Absolute => $running_total_fuel,
 );
-load_program @code_set;
-launch_application;
+
+sub main {
+    asm_boot((code => [ @code_set ], data => [ @module_data ]));
+    say "Fuel required is ", pop(@ARGV);
+}
+
+main();
 
 1;
