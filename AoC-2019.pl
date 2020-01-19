@@ -39,19 +39,17 @@ use strict;
 use warnings;
 use lib ".";
 
-our $data_file;
 
-my $solution_file;
-my ($challenge_day, $challenge_part) = (@ARGV, 0, 0);
+exit unless ( @ARGV );
 
-exit if ( 0 == $challenge_day );
-
-if ( 0 eq $challenge_part ) {
-    $solution_file = sprintf "Solutions/AoC-2019-%02d.pl", $challenge_day;
-} else {
-    $solution_file = sprintf "Solutions/AoC-2019-%02d_%s.pl", $challenge_day, lc($challenge_part);
+my $challenge_day = shift @ARGV;
+our $data_file = sprintf "Data/AoC-2019-%02d.txt", $challenge_day;
+my $solution_file = sprintf "Solutions/AoC-2019-%02d", $challenge_day;;
+if ( @ARGV ) {
+    my $challenge_part = shift @ARGV;
+    $solution_file = sprintf "${solution_file}_%s", lc($challenge_part);
 }
-$data_file = sprintf "Data/AoC-2019-%02d.txt", $challenge_day;
+$solution_file .= ".pl";
 
 do {
     do $solution_file;
@@ -59,7 +57,7 @@ do {
 } if ( -f $data_file && -f $solution_file );
 
 if ( -f $data_file ) {
-    say "The solutions for $challenge_day seem to be incomplete.";
+    say "The solutions for $challenge_day ($solution_file, $data_file) seem to be incomplete.";
 } else {
     say "There is no data for $challenge_day. Nothing can be done with out data.";
 }
