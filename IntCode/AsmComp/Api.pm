@@ -35,7 +35,7 @@ our $VERSION = '0.19.07';
 *asm_load_app   = *IntCode::AsmComp::AsmCodes::load_code;
 *asm_load_data  = *IntCode::AsmComp::AsmCodes::load_memory;
 *asm_memory     = *IntCode::AsmComp::AsmCodes::direct_memory_access;
-*asm_warm_boot  = *IntCode::AsmComp::AsmCodes::soft_start;
+*asm_warm_boot  = *IntCode::AsmComp::AsmCodes::hard_start;
 
 1;
 __END__
@@ -125,10 +125,7 @@ Exported routines are:
     asm_warm_boot([program_code_list])
         Clears the registers, except the status register, and flags,
             expect for the Decimal and X flags, wipes the data segment
-            and code segment. Nearly the same as relaunching the script,
-            except that the X and Decimal flags, used by external code
-            to control certain funtionality of the interface, are kept
-            as set by the supervising code, if any.
+            and reloads the code segment with the arguments, if any.
         Return value: none
 
 =head2 EXPORT

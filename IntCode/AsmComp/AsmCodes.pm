@@ -20,6 +20,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	load_memory
 	one_shot
 	soft_start
+	hard_start
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -433,20 +434,24 @@ sub soft_start {
     map {
         system_flag($_, 0);
     } qw(N V B I Z C);
-    system_memory( (0) x4 );
+}
+
+sub hard_start {
+    soft_start();
     if ( @_ ) {
         program_load(@_);
     } else {
         program_load( (0) x 4 );
     }
+    system_memory( (0) x4 );
 }
 
 sub code_execute {
     system_flag('X', 0);
     run_code();
-    push(@ARGV, (system_register('D'))
+    push(@ARGV, (system_register('D')))
         if ( system_flag('X') );
-    return (system_register('F') >> 2) & 7)
+    return ((system_register('F') >> 2) & 7)
         if ( system_flag('B') || system_flag('I') || system_flag('X') );
     return undef;
 }
@@ -555,11 +560,14 @@ Exported routines are:
         Return value: none
     soft_start([program_code_list])
         Clears the registers, except the status register, and flags,
+            expect for the Decimal and X flags. Allows for the program
+            to be reexecuted using the data and code as left by the
+            prior run, if any.
+        Return value: none
+    hard_start([program_code_list])
+        Clears the registers, except the status register, and flags,
             expect for the Decimal and X flags, wipes the data segment
-            and code segment. Nearly the same as relaunching the script,
-            except that the X and Decimal flags, used by external code
-            to control certain funtionality of the interface, are kept
-            as set by the supervising code, if any.
+            and reloads the code segment with the arguments, if any.
         Return value: none
 
 The AsmCodes, or assembly codes and what the mean. or do, are
@@ -690,6 +698,7 @@ The codes, grouped by function:
 	load_memory
 	one_shot
 	soft_start
+	hard_start
 
 =head1 AUTHOR
 
