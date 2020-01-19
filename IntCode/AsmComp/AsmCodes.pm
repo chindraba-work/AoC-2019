@@ -417,12 +417,6 @@ $asmcode{DIV} = sub {
     register_check('A');
 };
 
-sub run_code {
-    while ( ! system_flag('I') && ! system_flag('B') && system_register('C') < program_length() ) {
-        $asmcode{program_next_code()}();
-    }
-}
-
 sub one_shot {
     $asmcode{$_[0]}();
 }
@@ -446,14 +440,20 @@ sub hard_start {
     system_memory( (0) x4 );
 }
 
+sub code_cycle {
+    while ( ! system_flag('I') && ! system_flag('B') && system_register('C') < program_length() ) {
+        $asmcode{program_next_code()}();
+    }
+}
+
 sub code_execute {
     system_flag('X', 0);
-    run_code();
+    code_cycle();
     push(@ARGV, (system_register('D')))
         if ( system_flag('X') );
     return ((system_register('F') >> 2) & 7)
         if ( system_flag('B') || system_flag('I') || system_flag('X') );
-    return undef;
+    return 0;
 }
 
 sub code_launch {
@@ -468,7 +468,7 @@ sub code_resume {
     return code_execute();
 }
 
-sub program_step {
+sub code_step {
     return code_launch() 
         if ( 0 == system_register('S') );
     return code_resume();
