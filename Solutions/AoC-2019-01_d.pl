@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -39,6 +39,8 @@ use strict;
 use warnings;
 use IntCode::AsmComp;
 use Elves::GetData qw( read_lines );
+
+my $VERSION = '0.19.07';
 
 my @module_data = read_lines($main::data_file);
 my $module_count_value = @module_data;

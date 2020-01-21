@@ -38,18 +38,19 @@ use 5.026001;
 use strict;
 use warnings;
 use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
+
+my $VERSION = '0.19.07';
+
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::data_file);
 
 # load the given program into memory
-load_code_file($main::data_file);
+load_code_stream(@elf_script);
 
 # Clear ARGV in preparation for using it with the ElfComp
 $#ARGV = -1;
-
 # run the program
 elf_launch();
-
-# Retrieve the results
-say join "\n", reverse(@ARGV);
-
 
 1;

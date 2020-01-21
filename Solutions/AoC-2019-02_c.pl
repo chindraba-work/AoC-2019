@@ -38,12 +38,19 @@ use 5.026001;
 use strict;
 use warnings;
 use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
+
+my $VERSION = '0.19.07';
 
 my $target_value = 19690720;
 
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::data_file);
+
 for my $noun (0..99) {
     for my $verb (0..99) {
-        load_code_file($main::data_file);
+        # load the given program into memory
+        load_code_stream(@elf_script);
         terminal_memory_access(1,$noun);
         terminal_memory_access(2,$verb);
         elf_launch();

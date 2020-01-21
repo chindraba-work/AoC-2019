@@ -37,8 +37,11 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData 'read_lines';
-my ($low_limit, $high_limit) = split '-', (read_lines("Data/AoC-2019-04.txt"))[0];
+use Elves::GetData qw( read_lines );
+
+my $VERSION = '0.19.04';
+
+my ($low_limit, $high_limit) = split '-', (read_lines($main::data_file))[0];
 
 my $count = 0;
 for my $a (1..9) {

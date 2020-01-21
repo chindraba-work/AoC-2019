@@ -37,10 +37,12 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw(slurp_data);
+use Elves::GetData qw( slurp_data );
 use Elves::CrossedWires;
 
-my @file_data = slurp_data "Data/AoC-2019-03.txt";
+my $VERSION = '0.19.03';
+
+my @file_data = slurp_data($main::data_file);
 
 my %wires = (
     A => [(split ',', $file_data[0])],

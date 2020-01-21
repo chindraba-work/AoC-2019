@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -38,6 +38,8 @@ use 5.026001;
 use strict;
 use warnings;
 use Elves::FuelCounterUpper;
+
+my $VERSION = '0.19.01';
 
 our $show_progress = 0;
 

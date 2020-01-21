@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -40,9 +40,9 @@ use warnings;
 use Elves::GetData qw(read_lines);
 use Elves::OrbitCountChecksum;
 
-my $VERSION = '0.19.25';
+my $VERSION = '0.19.06';
 
-my @orbit_list = read_lines "$main::data_file";
+my @orbit_list = read_lines($main::data_file);
 map { add_orbit $_ } @orbit_list;
 my $checksum = orbit_checksum;
 say $checksum;

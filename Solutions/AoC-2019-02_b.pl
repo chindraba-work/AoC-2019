@@ -38,12 +38,18 @@ use 5.026001;
 use strict;
 use warnings;
 use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
+
+my $VERSION = '0.19.07';
 
 my $target_value = 19690720;
-my ($baseline, $per_noun, $per_verb, $nouns, $verbs);
+
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::data_file);
 
 # Find the baseline value
-load_code_file($main::data_file);
+my ($baseline, $per_noun, $per_verb, $nouns, $verbs);
+load_code_stream(@elf_script);
 terminal_memory_access(1,0);
 terminal_memory_access(2,0);
 elf_launch();
@@ -51,7 +57,7 @@ $baseline = terminal_memory_access(0);
 
 # Find the delta/noun
 warm_boot();
-load_code_file($main::data_file);
+load_code_stream(@elf_script);
 terminal_memory_access(1,1);
 terminal_memory_access(2,0);
 elf_launch();
@@ -62,7 +68,7 @@ $nouns = sprintf "%d", (($target_value - $baseline) / $per_noun);
 
 # Find the delta/verb
 warm_boot();
-load_code_file($main::data_file);
+load_code_stream(@elf_script);
 terminal_memory_access(1,0);
 terminal_memory_access(2,1);
 elf_launch();
@@ -73,7 +79,7 @@ $verbs = ($target_value - $baseline - $nouns * $per_noun)/$per_verb;
 
 # Show the final result
 warm_boot();
-load_code_file($main::data_file);
+load_code_stream(@elf_script);
 terminal_memory_access(1,$nouns);
 terminal_memory_access(2,$verbs);
 elf_launch();
