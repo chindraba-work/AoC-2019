@@ -12,14 +12,14 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	asm_app_launch
-	asm_app_resume
-	asm_app_step
-	asm_command
-	asm_load_app
-	asm_load_data
-	asm_memory
-	asm_warm_boot
+    asm_app_launch
+    asm_app_resume
+    asm_app_step
+    asm_command
+    asm_load_app
+    asm_load_data
+    asm_memory
+    asm_warm_boot
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -130,14 +130,14 @@ Exported routines are:
 
 =head2 EXPORT
 
-	asm_app_launch
-	asm_app_resume
-	asm_app_step
-	asm_command
-	asm_load_app
-	asm_load_data
-	asm_memory
-	asm_warm_boot
+    asm_app_launch
+    asm_app_resume
+    asm_app_step
+    asm_command
+    asm_load_app
+    asm_load_data
+    asm_memory
+    asm_warm_boot
 
 =head1 AUTHOR
 

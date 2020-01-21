@@ -12,15 +12,15 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	code_launch
-	code_resume
-	code_step
-	direct_memory_access
-	load_code
-	load_memory
-	one_shot
-	soft_start
-	hard_start
+    code_launch
+    code_resume
+    code_step
+    direct_memory_access
+    hard_start
+    load_code
+    load_memory
+    one_shot
+    soft_start
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -211,11 +211,10 @@ my %asmcode = (
     },
     INP => sub {
         set_operand();
-        print "AsmComp input: ";
         if ( @ARGV ) {
             system_register('D', shift(@ARGV));
-            printf("%s\n", system_register('D'));
         } else {
+            print "AsmComp input: ";
             $| =1;
             $_ = <STDIN>;
             chomp;
@@ -433,9 +432,9 @@ sub soft_start {
 sub hard_start {
     soft_start();
     if ( @_ ) {
-        program_load(@_);
+        load_code(@_);
     } else {
-        program_load( (0) x 4 );
+        load_code( (0) x 4 );
     }
     system_memory( (0) x4 );
 }
@@ -690,15 +689,15 @@ The codes, grouped by function:
 
 =head2 EXPORT
 
-	code_launch
-	code_resume
-	code_step
-	direct_memory_access
-	load_code
-	load_memory
-	one_shot
-	soft_start
-	hard_start
+    code_launch
+    code_resume
+    code_step
+    direct_memory_access
+    hard_start
+    load_code
+    load_memory
+    one_shot
+    soft_start
 
 =head1 AUTHOR
 

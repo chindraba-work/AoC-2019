@@ -12,10 +12,10 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	asm_boot
- 	program_continue
- 	program_restart
-	system_memory
+    asm_boot
+    program_continue
+    program_restart
+    system_memory
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -153,10 +153,10 @@ terminal input, or for use with the other input codes in AsmCodes.
 
 =head2 EXPORT
 
-	asm_boot
- 	program_continue
- 	program_restart
-	system_memory
+    asm_boot
+    program_continue
+    program_restart
+    system_memory
 
 =head1 AUTHOR
 
