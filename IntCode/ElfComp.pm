@@ -15,8 +15,10 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
     elf_launch
     elf_messages
+    elf_output
     elf_prompts
     enable_dump
+    filter_output
     load_code_file
     load_code_stream
     terminal_memory_access
@@ -60,6 +62,14 @@ sub enable_dump {
     }
 }
 
+sub filter_output {
+    if ( 1 == @_ && 1 == $_[0] ) {
+        $output_filter = 1;
+    } else {
+        $output_filter = 0;
+    }
+}
+
 sub load_code_file {
     load_code(read_comma_list(@_));
 }
@@ -68,6 +78,12 @@ sub elf_launch {
     $stopped = undef;
     $stopped = elf_step()
         until $stopped;
+}
+
+sub elf_output {
+    my @return_value = @output_buffer;
+    $#output_buffer = -1;
+    return (@return_value);
 }
 
 1;
@@ -101,6 +117,9 @@ Exported routines are:
             the first with an empty list, will have no preface, and
             will be output directly from the ElfScript program.
         Return: nothing
+    elf_output()
+        Returns the list of code-generated outputs stored in the
+            @output_buffer
     elf_prompts(['list','of','prompts'])
         Loads the prompts used for input commands. The usage and effect
             is the same as for elf_messages, except that if no prompt
@@ -113,6 +132,11 @@ Exported routines are:
             argument, including empty or non-zero other than 1, will 
             disable the option. Useful for debugging purposes.
         Return: nothing
+    filter_output([{0|1}])
+        Routine to turn on/off the output_filter flag in ElfCodes. The
+            argument of 1 will turn set the output_filter, any other
+            value, including none, will clear the output_filter.
+        Return value: none
     load_code_file(file_name)
         Reads the named file, as a single line of comma-separated list
             of ElfScript integer commands and places it in the data
@@ -156,6 +180,7 @@ Exported routines are:
     elf_messages
     elf_prompts
     enable_dump
+    filter_output
     load_code_file
     load_code_stream
     terminal_memory_access

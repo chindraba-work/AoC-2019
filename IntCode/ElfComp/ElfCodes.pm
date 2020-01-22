@@ -13,6 +13,8 @@ our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw (
     @messages
+    @output_buffer
+    $output_filter
     @prompts
     elf_step
     elf_restart
@@ -33,6 +35,8 @@ our $VERSION = '0.19.07';
 
 my ($elf_index, $op1, $op2, @parameter_mode) = (0) x 6;
 our @messages;
+our @output_buffer;
+our $output_filter;
 our @prompts;
 my @mode_list = qw(
     Absolute
@@ -120,10 +124,17 @@ sub elf_step {
     asm_load_app(@asm_snippet);
     $step_value = asm_app_step();
     if ( $pending_output ) {
+        my $output_message;
+        my $output_value = pop(@ARGV);
         if ( @messages ) {
-            print(pop(@messages)," ");
+            $output_message = pop(@messages) . " " . $output_value;
+        } else {
+            $output_message = $output_value;
         }
-        print(pop(@ARGV),"\n");
+        push(@output_buffer, $output_message);
+        unless ( $output_filter ) {
+            print "$output_message\n";
+        }
         $pending_output = 0;
     }
     if ( 4 & $step_value ) {
@@ -154,6 +165,12 @@ Exported variables and routines are:
     @messages
         List of the messages used for prefacing outputs. The list is in
             reverse of the order to be used. (Push onto the list).
+    @output_buffer
+        Collection of values ouput by the code.
+    $output_filter
+        Signal to filter output, and bypass sending the results of the
+            output commands to the live terminal. False allows the use
+            of the terminal output <STDOUT>, True prevents it.
     @prompts
         List of the prompts used for input commands. The list is in
             reverse of the order to be used. (Push onto the list).
@@ -205,6 +222,8 @@ Exported variables and routines are:
 =head2 EXPORT
 
     @messages
+    @output_buffer
+    $output_filter
     @prompts
     elf_step
     elf_restart
