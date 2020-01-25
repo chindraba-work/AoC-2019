@@ -146,7 +146,7 @@ sub elf_step {
             }
             push(@output_buffer, $output_message);
             unless ( $output_filter ) {
-                print <STDOUT> "$output_message\n";
+                print STDOUT "$output_message\n";
             }
         }
         $pending_output = 0;
