@@ -15,6 +15,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(
     elf_launch
     elf_messages
+    elf_pipes
     elf_output
     elf_prompts
     enable_dump
@@ -33,6 +34,7 @@ our $VERSION = '0.19.07';
 
 my $stopped;
 
+*elf_pipes              = *IntCode::ElfComp::ElfCodes::set_pipes;
 *load_code_stream       = *IntCode::ElfComp::ElfCodes::load_code;
 *terminal_memory_access = *IntCode::ElfComp::ElfCodes::memory_terminal;
 *warm_boot              = *IntCode::ElfComp::ElfCodes::elf_restart;
@@ -120,6 +122,10 @@ Exported routines are:
     elf_output()
         Returns the list of code-generated outputs stored in the
             @output_buffer
+    elf_pipes(input_handle, output_handle)
+        Routine to set the I/O handles for redirection. Uses the API's
+            %asm_handles, q.v.
+        Return value: none
     elf_prompts(['list','of','prompts'])
         Loads the prompts used for input commands. The usage and effect
             is the same as for elf_messages, except that if no prompt
@@ -178,6 +184,7 @@ Exported routines are:
 
     elf_launch
     elf_messages
+    elf_pipes
     elf_prompts
     enable_dump
     filter_output

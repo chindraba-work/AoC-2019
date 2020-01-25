@@ -16,11 +16,12 @@ our %EXPORT_TAGS = ( 'all' => [ qw (
     @output_buffer
     $output_filter
     @prompts
-    elf_step
     elf_restart
+    elf_step
     load_code
     memory_terminal
     raw_asm
+    set_pipes
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -58,13 +59,18 @@ my %elf_asm = (
         )},
     3 => sub {
         unless ( @ARGV ) {
-            if ( @prompts ) {
-                print(pop(@prompts),": ");
+            if (defined $asm_handles{input} ) {
+                my $fh = $asm_handles{input};
+                $_ = <$fh>;
             } else {
-                print "ElfComp input: ";
+                if ( @prompts ) {
+                    print STDOUT (pop(@prompts),": ");
+                } else {
+                    print STDOUT "ElfComp input: ";
+                }
+                $| =1;
+                $_ = <STDIN>;
             }
-            $| =1;
-            $_ = <STDIN>;
             chomp;
             unshift(@ARGV, $_);
         }
@@ -108,6 +114,10 @@ my %elf_asm = (
         )},
 );
 
+sub set_pipes {
+    ($asm_handles{input}, $asm_handles{output}) = @_;
+}
+
 sub elf_restart {
     asm_warm_boot();
     $elf_index = 0;
@@ -124,16 +134,20 @@ sub elf_step {
     asm_load_app(@asm_snippet);
     $step_value = asm_app_step();
     if ( $pending_output ) {
-        my $output_message;
-        my $output_value = pop(@ARGV);
-        if ( @messages ) {
-            $output_message = pop(@messages) . " " . $output_value;
+        if ( defined $asm_handles{output} ) {
+            push(@output_buffer, pop(@ARGV));
         } else {
-            $output_message = $output_value;
-        }
-        push(@output_buffer, $output_message);
-        unless ( $output_filter ) {
-            print "$output_message\n";
+            my $output_message;
+            my $output_value = pop(@ARGV);
+            if ( @messages ) {
+                $output_message = pop(@messages) . " " . $output_value;
+            } else {
+                $output_message = $output_value;
+            }
+            push(@output_buffer, $output_message);
+            unless ( $output_filter ) {
+                print <STDOUT> "$output_message\n";
+            }
         }
         $pending_output = 0;
     }
@@ -174,6 +188,13 @@ Exported variables and routines are:
     @prompts
         List of the prompts used for input commands. The list is in
             reverse of the order to be used. (Push onto the list).
+    elf_restart()
+        Clear system registers and flags, remove any ghosts from the 
+            AsmComp code memory, wipe the ElfScript from data memory
+            and reset the ElfScript code pointer. Places the system in
+            the same state as if the Perl program had just been run,
+            except that the setting for enable_dump is preserved.
+        Return: nothing
     elf_step()
         Retrieve the next ElfScript instruction and covert it into code
             for the AsmComp and execute that.
@@ -182,13 +203,6 @@ Exported variables and routines are:
             1: snippet terminated with BRK command
             2: snippet terminated with STP command
             3: snippet terminated with divide by zero error
-    elf_restart()
-        Clear system registers and flags, remove any ghosts from the 
-            AsmComp code memory, wipe the ElfScript from data memory
-            and reset the ElfScript code pointer. Places the system in
-            the same state as if the Perl program had just been run,
-            except that the setting for enable_dump is preserved.
-        Return: nothing
     load_code(list,of,commands)
         Stores the list of commands in the AsmComp data memory. There
             are no safeguards of checks applied to the list. When using
@@ -218,6 +232,10 @@ Exported variables and routines are:
             and clearing flags, and pre-loading registers for testing
             are the primary purposes for this routine's use.
         Return value: none
+    set_pipes(input_handle, output_handle)
+        Routine to set the I/O handles for redirection. Uses the API's
+            %asm_handles, q.v.
+        Return value: none
 
 =head2 EXPORT
 
@@ -225,11 +243,12 @@ Exported variables and routines are:
     @output_buffer
     $output_filter
     @prompts
-    elf_step
     elf_restart
+    elf_step
     load_code
     memory_terminal
     raw_asm
+    set_pipes
 
 =head1 AUTHOR
 

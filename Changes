@@ -3,6 +3,8 @@ Revision history for 2019 Advent of Code challenges
 0.19.07
     Day 7: Amplification Circuit
     Intcode computer using new program
+    Add the ability to do Inter Process Communication such that
+        parallel processing can be simulated.
 
 0.19.06
     Day 6: Univeral Orbit Map

@@ -24,6 +24,8 @@ To simplify reading for interested parties, the instructions for the challenges 
 
 Further enhancements for the AsmComp backend made to overhaul the I/O relative to the ElfComp frontend, the managing Perl code, and the user's terminal. Updates to completed solutions (Days 1 - 6) to accomodate the changes where they "break" the developed solutions.
 
+The AsmComp is futher enhanced to allow sensible commandline, and API-controlled, I/O redirection.
+
 # Copyright and License
 
 The MIT license applies to all the code within this repository.
