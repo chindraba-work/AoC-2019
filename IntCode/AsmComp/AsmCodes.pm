@@ -12,6 +12,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
+    %io_handles
     code_launch
     code_resume
     code_step
@@ -33,6 +34,8 @@ my $access_mode;
 my $operand;
 
 *load_code = *IntCode::AsmComp::BaseCode::program_init;
+
+our %io_handles;
 
 sub load_memory {
     system_memory(@_, 0, 0, 0 );
@@ -99,6 +102,15 @@ sub core_dump {
     system_stack('dump');
     system_register();
     system_flag();
+}
+
+sub data_out {
+    my $output_data = shift;
+    push(@ARGV, $output_data);
+    if ( defined $io_handles{output} ) {
+        my $fh = $io_handles{output};
+        print {$fh} "$output_data\n";
+    }
 }
 
 # Routines to implement the assembly codes in a common manner
@@ -212,14 +224,17 @@ my %asmcode = (
     INP => sub {
         set_operand();
         if ( @ARGV ) {
-            system_register('D', shift(@ARGV));
+            $_ = shift(@ARGV);
+        } elsif ( defined $io_handles{input} ) {
+            my $fh = $io_handles{input};
+            $_ = <$fh>;
         } else {
-            print "AsmComp input: ";
+            print STDOUT "AsmComp input: ";
             $| =1;
             $_ = <STDIN>;
-            chomp;
-            system_register('D', $_);
         }
+        chomp;
+        system_register('D', $_);
         register_check('D');
         if ( $access_mode == $addressing{Accumulator} ) {
             system_register('A', system_register('D'));
@@ -264,7 +279,7 @@ my %asmcode = (
     OTB => sub {
         set_operand();
         system_register('D', get_memory());
-        push(@ARGV, sprintf(
+        data_out(sprintf(
             "%016b",
             system_register('D')
         ));
@@ -272,7 +287,7 @@ my %asmcode = (
     OTD => sub {
         set_operand();
         system_register('D', get_memory());
-        push(@ARGV, sprintf(
+        data_out(sprintf(
             "%d",
             system_register('D')
         ));
@@ -280,7 +295,7 @@ my %asmcode = (
     OTH => sub {
         set_operand();
         system_register('D', get_memory());
-        push(@ARGV, sprintf(
+        data_out(sprintf(
             "%08X",
             system_register('D')
         ));
@@ -288,7 +303,7 @@ my %asmcode = (
     OTO => sub {
         set_operand();
         system_register('D', get_memory());
-        push(@ARGV, sprintf(
+        data_out(sprintf(
             "%#o",
             system_register('D')
         ));
@@ -318,7 +333,7 @@ my %asmcode = (
     PRT => sub {
         set_operand();
         system_register('D', get_memory());
-        printf(
+        printf STDOUT (
             "%s\n",
             system_register('D')
         );
@@ -489,7 +504,15 @@ IntCode::AsmComp::AsmCodes
 Implementation of the assembly-level workings of the IntCode computer
 needed by the elves in the 2019 Advent of Code challenges.
 
-Exported routines are:
+Exported variables and routines are:
+    %io_handles
+        Hash holding the file handles for redirected select I/O. Only
+            the INP, OTB, OTD, OTH, OTO commands are redirectable. The
+            remaining I/O commands go to STDIN and STDOUT, which may
+            be redirected on the command line, or elsewhere, but are not
+            available for controlled redirection.
+        {input} : the handle for input with the INP command
+        {output} : the handle for output from the OTx commands
     code_launch()
         Clear the registers and launch the program.
         Return value:
@@ -622,7 +645,7 @@ The AsmCodes, or assembly codes and what the mean. or do, are
     PHV: Push memory onto ARGV
     PLA: Pop accumulator from stack
     PLP: Pop status register from stack
-    PLV: Pop memory from stack
+    PLV: Pop memory from ARGV
     PRT: Print memory to STDOUT
     REA: Manditory pop ARGV into memory, halts program on failure, see GET
     ROL: Rotate memory left
@@ -689,6 +712,7 @@ The codes, grouped by function:
 
 =head2 EXPORT
 
+    %io_handles
     code_launch
     code_resume
     code_step

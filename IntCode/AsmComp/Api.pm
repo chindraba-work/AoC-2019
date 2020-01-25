@@ -12,6 +12,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
+    %asm_handles
     asm_app_launch
     asm_app_resume
     asm_app_step
@@ -27,7 +28,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = ( @{ $EXPORT_TAGS{'all'} } );
 
 our $VERSION = '0.19.07';
-
+*asm_handles    = *IntCode::AsmComp::AsmCodes::io_handles;
 *asm_app_launch = *IntCode::AsmComp::AsmCodes::code_launch;
 *asm_app_resume = *IntCode::AsmComp::AsmCodes::code_resume;
 *asm_app_step   = *IntCode::AsmComp::AsmCodes::code_step;
@@ -54,7 +55,11 @@ Application programming interface to the Assembly computer, built to
 handle the computing needs of the elves in the 2019 Advent of Code
 challenges.
 
-Exported routines are:
+Exported variables and routines are:
+    %asm_handles
+        Hash holding the file handles for redirected select I/O.
+        {input} : the handle for input
+        {output} : the handle for output
     asm_app_launch()
         Clear the registers and launch the program.
         Return value:
@@ -130,6 +135,7 @@ Exported routines are:
 
 =head2 EXPORT
 
+    %asm_handles
     asm_app_launch
     asm_app_resume
     asm_app_step

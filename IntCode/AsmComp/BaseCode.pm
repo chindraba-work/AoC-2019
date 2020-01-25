@@ -72,11 +72,11 @@ our %register = (
 );
 
 sub base_dump_registers {
-    say "\nRegister Contents:";
+    print STDERR "\nRegister Contents:\n";
     map {
-        printf("'%s' => %2\$064b: %i\n", $_, $process_registers{$_});
+        printf STDERR ("'%s' => %2\$064b: %i\n", $_, $process_registers{$_});
     } qw(C S I A X);
-    printf("'F' => %08b\n", $process_registers{F});
+    printf STDERR ("'F' => %08b\n", $process_registers{F});
 }
 
 sub base_load_register {
@@ -89,9 +89,9 @@ sub base_read_register {
 }
 
 sub base_dump_flags {
-    say "\nFlag Status:";
+    print STDERR "\nFlag Status:\n";
     map {
-        printf("Flag %s is %s\n", $_, ($process_registers{F} & $status_flags{$_})? 'Set' : 'Clear');
+        printf STDERR ("Flag %s is %s\n", $_, ($process_registers{F} & $status_flags{$_})? 'Set' : 'Clear');
     } qw(N V B D I Z C);
     return 1;
 }
@@ -127,7 +127,7 @@ sub base_test_flag {
 }
 
 sub base_dump_stack {
-    say("Stack dump: ", join ', ', (@stack_heap[0..$process_registers{S} - 1]));
+    print STDERR ("Stack dump: ", join(', ', (@stack_heap[0..$process_registers{S} - 1])),"\n");
     return undef;
 }
 
@@ -144,7 +144,7 @@ sub base_push_stack {
 
 sub base_dump_memory {
     my $memory_dump = join(', ', (@core_ram));
-    say("Memory dump: $memory_dump");
+    print STDERR ("Memory dump: $memory_dump\n");
 }
 
 sub base_load_memory {
