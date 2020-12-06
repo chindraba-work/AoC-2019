@@ -1,8 +1,7 @@
 package Elves::GetData;
-
 # SPDX-License-Identifier: MIT
 
-use 5.026001;
+use 5.030000;
 use strict;
 use warnings;
 
@@ -14,6 +13,8 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	slurp_data
 	read_lines
 	read_comma_list
+	read_lined_list
+	read_lined_hash
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -22,7 +23,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.19.01';
+our $VERSION = '0.20.06';
 
 # Presumption is that none of the data files will be extremely large,
 # and should be easily handled by system memory.
@@ -63,6 +64,31 @@ sub read_comma_list {
     return @data_list;
 }
 
+sub read_lined_list {
+# Read a file with lines for records and blank lines between groups.
+#   First arg (required) is path of file to read
+#   Second arg (optional) is the character between entries, default space and comma
+# Return: list of lists of records
+    my $entry_delim = $_[1]? qr/$_[1]/ : qr/ |,/;
+    my @data_list = map { [ map {split / /, $_} (split $entry_delim, $_) ] } (split /  /, slurp_data(shift));
+    return @data_list;
+}
+
+sub read_lined_hash {
+# Read a file with key:value tuples space or line separated for records and
+# blank lines between records.
+#   First arg (required) is path of file to read
+#   Second arg (optional) is the character between entries, default space and comma
+#   Third arg (optional) is the character between key and value, default ':'
+# Pathname of the data file to read is first argument
+# Return: list of hash records
+    my $entry_delim = $_[1]? qr/$_[1]/ : qr/ |,/;
+    my $tuple_delim = $_[2]? qr/$_[2]/ : ':';
+    my @data_list = map { {
+        map { split $tuple_delim, $_ } (split $entry_delim, $_)
+    } } (split /  /, slurp_data(shift));
+    return @data_list;
+}
 1;
 __END__
 
@@ -90,7 +116,7 @@ Chindraba, E<lt>aoc@chindraba.workE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright © 2019  Chindraba (Ronald Lamoreaux)
+Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)
                   <aoc@chindraba.work>
 - All Rights Reserved
 
