@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
+#  Copyright © 2020  Chindraba (Ronald Lamoreaux)                      #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -37,54 +37,78 @@
 use 5.026001;
 use strict;
 use warnings;
-use IntCode::AsmComp;
-use Elves::GetData qw( read_lines );
+use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
 
 my $VERSION = '0.19.07';
 
-my @module_data = read_lines($main::data_file);
-my $module_count_value = @module_data; 
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::puzzle_data_file);
 
-my ($fuel_factor_value, $fuel_adjust_value) = (3,2);
-my (
-    $mass_list,
-    $fuel_list,
-    $module_count,
-    $fuel_factor,
-    $fuel_adjust,
-    $running_total_fuel,
-) = (100..105);
+# Part 1
+say "=== PART 1 ===";
 
-my @code_set = (
-    LDA => Immediate => $fuel_factor_value,
-    STA => Absolute => $fuel_factor,
-    LDA => Immediate => $fuel_adjust_value,
-    STA => Absolute => $fuel_adjust,
-    LDA => Immediate => $module_count_value,
-    STA => Absolute => $module_count,
-    LDA => Immediate => 0,
-    STA => Absolute => $mass_list,
-    LDA => Immediate => 0,
-    STA => Absolute => $running_total_fuel,
-    CMP => Absolute => $module_count,
-    BPL => Absolute => 57,
-    TAI =>
-    LDA => List => $mass_list,
-    DIV => Absolute => $fuel_factor,
-    SBC => Absolute => $fuel_adjust,
-    ADC => Absolute => $running_total_fuel,
-    STA => Absolute => $running_total_fuel,
-    INI =>
-    TIA =>
-    JMP => Absolute => 30,
-    OTD => Absolute => $running_total_fuel,
-);
+# load the given program into memory
+load_code_stream(@elf_script);
 
-sub main {
-    asm_boot((code => [ @code_set ], data => [ @module_data ]));
-    say "Fuel required is ", pop(@ARGV);
-}
+# modify the program as instructed in the challenge
+terminal_memory_access(1,12);
+terminal_memory_access(2,2);
 
-main();
+# run the program
+elf_launch();
+
+say "Program answer is ",terminal_memory_access(0);
+say "==============";
+
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "\n=== PART 2 ===";
+
+my $target_value = 19690720;
+my ($baseline, $per_noun, $per_verb, $nouns, $verbs);
+
+# Find the baseline value
+warm_boot();
+load_code_stream(@elf_script);
+terminal_memory_access(1,0);
+terminal_memory_access(2,0);
+elf_launch();
+$baseline = terminal_memory_access(0);
+
+# Find the delta/noun
+warm_boot();
+load_code_stream(@elf_script);
+terminal_memory_access(1,1);
+terminal_memory_access(2,0);
+elf_launch();
+$per_noun = terminal_memory_access(0) - $baseline;
+
+# Find number of nouns needed
+$nouns = sprintf "%d", (($target_value - $baseline) / $per_noun);
+
+# Find the delta/verb
+warm_boot();
+load_code_stream(@elf_script);
+terminal_memory_access(1,0);
+terminal_memory_access(2,1);
+elf_launch();
+$per_verb = terminal_memory_access(0) - $baseline;
+
+# Find the number of verbs needed
+$verbs = ($target_value - $baseline - $nouns * $per_noun)/$per_verb;
+
+# Show the final result
+warm_boot();
+load_code_stream(@elf_script);
+terminal_memory_access(1,$nouns);
+terminal_memory_access(2,$verbs);
+elf_launch();
+
+say 100 * $nouns + $verbs, " = 100 * $nouns + $verbs and gives ", terminal_memory_access(0);
+
+say "==============";
 
 1;

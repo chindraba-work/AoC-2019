@@ -37,52 +37,70 @@
 use 5.026001;
 use strict;
 use warnings;
-use IntCode::ElfComp;
-use Elves::GetData qw( read_comma_list );
+use Elves::GetData qw( read_lines );
 
-my $VERSION = '0.19.07';
+my $VERSION = '0.19.04';
 
-my $target_value = 19690720;
+my ($low_limit, $high_limit) = split '-', (read_lines($main::puzzle_data_file))[0];
 
-# Retrieve the ElfScript file
-my @elf_script = read_comma_list($main::data_file);
+my ($count, $a, $b, $c, $d, $e, $f, $num);
+# Part 1
+say "=== PART 1 ===";
 
-# Find the baseline value
-my ($baseline, $per_noun, $per_verb, $nouns, $verbs);
-load_code_stream(@elf_script);
-terminal_memory_access(1,0);
-terminal_memory_access(2,0);
-elf_launch();
-$baseline = terminal_memory_access(0);
+$count = 0;
+for $a (1..9) {
+    for $b ($a..9) {
+        for $c ($b..9) {
+            for $d ($c..9) {
+                for $e ($d..9) {
+                    for $f ($e..9) {
+                        $num = join '', ($a,$b,$c,$d,$e,$f);
+                        if (
+                            ( $num >= $low_limit ) &&
+                            ( $num <= $high_limit ) &&
+                            ( $num =~ /([0-9])\1/ )
+                        ) {
+                            $count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+say "From $low_limit to $high_limit has $count valid passwords.";
 
-# Find the delta/noun
-warm_boot();
-load_code_stream(@elf_script);
-terminal_memory_access(1,1);
-terminal_memory_access(2,0);
-elf_launch();
-$per_noun = terminal_memory_access(0) - $baseline;
+say "==============";
 
-# Find number of nouns needed
-$nouns = sprintf "%d", (($target_value - $baseline) / $per_noun);
+exit unless $main::do_part_2;
 
-# Find the delta/verb
-warm_boot();
-load_code_stream(@elf_script);
-terminal_memory_access(1,0);
-terminal_memory_access(2,1);
-elf_launch();
-$per_verb = terminal_memory_access(0) - $baseline;
+# Part 2
+say "=== PART 2 ===";
 
-# Find the number of verbs needed
-$verbs = ($target_value - $baseline - $nouns * $per_noun)/$per_verb;
+$count = 0;
+for $a (1..9) {
+    for $b ($a..9) {
+        for $c ($b..9) {
+            for $d ($c..9) {
+                for $e ($d..9) {
+                    for $f ($e..9) {
+                        $num = join '', ($a,$b,$c,$d,$e,$f);
+                        if (
+                            ( $num >= $low_limit ) &&
+                            ( $num <= $high_limit ) &&
+                            ( $num =~ /(.)\1((?!\1)|\1*(*SKIP)(*FAIL))/ )
+                        ) {
+                            $count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+say "From $low_limit to $high_limit has $count valid passwords.";
 
-# Show the final result
-warm_boot();
-load_code_stream(@elf_script);
-terminal_memory_access(1,$nouns);
-terminal_memory_access(2,$verbs);
-elf_launch();
+say "==============";
 
-say 100 * $nouns + $verbs, " = 100 * $nouns + $verbs and gives ", terminal_memory_access(0);
+
 1;

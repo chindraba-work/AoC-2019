@@ -37,48 +37,59 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw( slurp_data );
-use Elves::CrossedWires;
+use IntCode::ElfComp;
+use Elves::Permutator qw( permutate );
+use Elves::GetData qw( read_comma_list );
 
-my $VERSION = '0.19.03';
+my $VERSION = '0.19.07';
 
-my @file_data = slurp_data($main::data_file);
+my @setting_list;
 
-my %wires = (
-    A => [(split ',', $file_data[0])],
-    B => [(split ',', $file_data[1])],
-);
+# Collection of all computed thrust values
+# Key is the input values, colon separated
+# Value is the resultant thrust value
+my %thruster_matrix;
+# The current best thrust value
+my $max_thrust = 0;
+# The amplifier inputs to get this thrust
+my @max_inputs = ();
 
-# Set the origin for mapping and comparisons
-$node_origin = '0:0';
+# the program to run repeatedly
+my @elf_script = read_comma_list("Data/AoC-2019-07.txt");
+# Clear ARGV so it can be used internally
+$#ARGV = -1;
+# Redirect ElfComp output to memory
+filter_output(1);
 
-for my $wire (keys %wires) {
-    # Set the starting point for mapping the wire
-    my $current_node = $node_origin;
-    $step_count = 0;
-    # Map one of the wires
-    for my $segment (@{ $wires{$wire} }) {
-        $current_node = map_segment $current_node, $segment, $wire;
+sub store_thruster_value {
+    my $thruster_value = shift;
+    my @inputs = @_;
+    $thruster_matrix{join(':',@inputs)} = $thruster_value;
+    if ( $thruster_value > $max_thrust ) {
+        $max_thrust = $thruster_value;
+        @max_inputs = @inputs;
+say join(':',@inputs), " => ", $thruster_value, " **";
+    } else {
+say join(':',@inputs), " => ", $thruster_value;
     }
 }
 
-# Mark the origin point as such, cancelling it being recorded as a crossover
-$node_map{$node_origin} = 'ORIGIN';
-
-my @crossovers = ();
-while ( my ($key, $value) = each %node_map ) {
-    if ( "X" eq $value ) {
-        push @crossovers, $key;
+sub find_thrust_input {
+    unshift(@ARGV, 0);
+    my @amp_settings = @{$_[0]};
+    foreach my $amp_setting (@amp_settings) {
+        unshift(@ARGV, $amp_setting);
+        load_code_stream(@elf_script);
+        elf_launch();
+        push(@ARGV, (elf_output)[0]);
+        warm_boot();
     }
+    store_thruster_value(shift(@ARGV),@amp_settings);    
 }
-@crossovers = sort { node_manhattan($node_origin, $a) <=> node_manhattan($node_origin, $b) } @crossovers;
 
-# Report the results
-say "Closest crossover, by Manhattan distance, is ",node_manhattan($node_origin, $crossovers[0])," nodes, or ", node_steps($node_origin, $crossovers[0]), " steps from the origin at ",$crossovers[0];
+my @amp_range = ( 0 .. 4 );
+permutate(\&find_thrust_input, $#amp_range, [@amp_range]);
 
-@crossovers = sort { node_steps($node_origin, $a) <=> node_steps($node_origin, $b) } @crossovers;
-
-# Report the results
-say "Closest crossover, by Wire distance, is ",node_manhattan($node_origin, $crossovers[0])," nodes, or ", node_steps($node_origin, $crossovers[0]), " steps from the origin at ",$crossovers[0];
+say "Max thrust is ",$max_thrust," using inputs of ",join(':',@max_inputs);
 
 1;

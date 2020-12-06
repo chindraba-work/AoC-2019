@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2020  Chindraba (Ronald Lamoreaux)                      #
+#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -37,25 +37,40 @@
 use 5.026001;
 use strict;
 use warnings;
-use IntCode::ElfComp;
-use Elves::GetData qw( read_comma_list );
+use Elves::GetData qw(read_lines);
+use Elves::OrbitCountChecksum;
 
-my $VERSION = '0.19.07';
+my $VERSION = '0.19.06';
 
-# Retrieve the ElfScript file
-my @elf_script = read_comma_list($main::data_file);
+my @orbit_list = read_lines($main::puzzle_data_file);
+map { add_orbit $_ } @orbit_list;
 
-# load the given program into memory
-load_code_stream(@elf_script);
+# Part 1
+say "=== PART 1 ===";
 
-# modify the program as instructed in the challenge
-terminal_memory_access(1,12);
-terminal_memory_access(2,2);
+say "Checksum is ", orbit_checksum;
 
-# run the program
-elf_launch();
+say "==============";
 
-say "\nProgram answer is ",terminal_memory_access(0);
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "=== PART 2 ===";
+
+my @san_path = trace_route('SAN');
+my @you_path = trace_route('YOU');
+while ( $san_path[1] eq $you_path[1] ) {
+    shift @san_path;
+    shift @you_path;
+}
+shift @you_path;
+unshift @san_path, reverse(@you_path);
+say "Orbital hops needed is ", $#san_path;
+say "The path is ", join(', ', @san_path);
+
+say "==============";
+
 
 
 1;

@@ -37,23 +37,24 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw(read_lines);
-use Elves::OrbitCountChecksum;
+use Elves::FuelCounterUpper;
 
-my $VERSION = '0.19.06';
+my $VERSION = '0.19.01';
 
-my @orbit_list = read_lines($main::data_file);
-map { add_orbit $_ } @orbit_list;
-say "Checksum is ", orbit_checksum;
-my @san_path = trace_route('SAN');
-my @you_path = trace_route('YOU');
-while ( $san_path[1] eq $you_path[1] ) {
-    shift @san_path;
-    shift @you_path;
-}
-shift @you_path;
-unshift @san_path, reverse(@you_path);
-say "Orbital hops needed is ", $#san_path;
-say "The path is ", join(', ', @san_path);
+our $show_progress = 0;
+
+# Part 1
+
+say "=== PART 1 ===";
+my $day_1_answer = fuel_counter_upper $main::puzzle_data_file, 'short';
+say "==============";
+
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "\n=== PART 2 ===";
+my $day_1_answer = fuel_counter_upper $main::puzzle_data_file, 'long';
+say "==============";
 
 1;

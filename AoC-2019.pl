@@ -39,27 +39,37 @@ use strict;
 use warnings;
 use lib ".";
 
+our $aoc_year = 2019;
+our $use_live_data = 1;
+our $do_part_2 = 1;
 
 exit unless ( @ARGV );
 
-my $challenge_day = shift @ARGV;
-our $data_file = sprintf "Data/AoC-2019-%02d.txt", $challenge_day;
-my $solution_file = sprintf "Solutions/AoC-2019-%02d", $challenge_day;;
+our $challenge_day = shift @ARGV;
+
+my $solution_file = sprintf "Solutions/day_%02d", $challenge_day;
+our $puzzle_data_file = sprintf "Data/%s_%02d.txt", $use_live_data ? 'day' : 'sample', $challenge_day;
+
 if ( @ARGV ) {
     my $challenge_part = shift @ARGV;
-    $solution_file = sprintf "${solution_file}_%s", lc($challenge_part);
+    $solution_file = sprintf "Solutions/day_%02d_%s.pl", $challenge_day, lc($challenge_part);
+} elsif ( -f sprintf("Solutions/day_%02d.pl", $challenge_day) ) {
+    $solution_file = sprintf "Solutions/day_%02d.pl", $challenge_day;
+} elsif ($do_part_2) {
+    $solution_file = sprintf "Solutions/day_%02d_%s.pl", $challenge_day, 'b';
+} else {
+    $solution_file = sprintf "Solutions/day_%02d_%s.pl", $challenge_day, 'a';
 }
-$solution_file .= ".pl";
 
 do {
     do $solution_file;
     exit;
-} if ( -f $data_file && -f $solution_file );
+} if ( -f $puzzle_data_file && -f $solution_file );
 
-if ( -f $data_file ) {
-    say "The solutions for $challenge_day ($solution_file, $data_file) seem to be incomplete.";
+if ( -f $puzzle_data_file ) {
+    say "The solutions for $challenge_day ($solution_file, $puzzle_data_file) seem to be incomplete.";
 } else {
-    say "There is no data for $challenge_day. Nothing can be done with out data.";
+    say "There is no data for $challenge_day. Looking for $puzzle_data_file. Nothing can be done with out data.";
 }
 
 1;

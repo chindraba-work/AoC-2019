@@ -42,8 +42,10 @@ use Elves::GetData qw( read_lines );
 
 my $VERSION = '0.19.07';
 
-my @module_data = read_lines($main::data_file);
-my $module_count_value = @module_data;
+my $tally_method;
+
+my @module_data = read_lines($main::puzzle_data_file);
+my $module_count_value = @module_data; 
 
 my ($fuel_factor_value, $fuel_adjust_value) = (3,2);
 my (
@@ -56,8 +58,32 @@ my (
     $current_mass,
     $module_total_fuel,
 ) = (100..110);
-
-my @code_set = (
+my %code_set = (
+  short => [
+    LDA => Immediate => $fuel_factor_value,
+    STA => Absolute => $fuel_factor,
+    LDA => Immediate => $fuel_adjust_value,
+    STA => Absolute => $fuel_adjust,
+    LDA => Immediate => $module_count_value,
+    STA => Absolute => $module_count,
+    LDA => Immediate => 0,
+    STA => Absolute => $mass_list,
+    LDA => Immediate => 0,
+    STA => Absolute => $running_total_fuel,
+    CMP => Absolute => $module_count,
+    BPL => Absolute => 57,
+    TAI =>
+    LDA => List => $mass_list,
+    DIV => Absolute => $fuel_factor,
+    SBC => Absolute => $fuel_adjust,
+    ADC => Absolute => $running_total_fuel,
+    STA => Absolute => $running_total_fuel,
+    INI =>
+    TIA =>
+    JMP => Absolute => 30,
+    OTD => Absolute => $running_total_fuel,
+  ],
+  long => [
     LDA => Immediate => $fuel_factor_value,
     STA => Absolute => $fuel_factor,
     LDA => Immediate => $fuel_adjust_value,
@@ -90,14 +116,20 @@ my @code_set = (
     TIA =>
     JMP => Relative => -57,
     OTD => Absolute => $running_total_fuel,
+  ],
 );
 
-
 sub main {
-    asm_boot((code => [ @code_set ], data => [ @module_data ]));
+    asm_boot((code => $code_set{$tally_method}, data => [ @module_data ]));
     say "Fuel required is ", pop(@ARGV);
 }
 
+$tally_method = 'short';
 main();
+
+if ($main::do_part_2) {
+    $tally_method = 'long';
+    main();
+}
 
 1;

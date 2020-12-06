@@ -8,7 +8,7 @@
 #  presented by the 2019 Advent of Code challenge.                     #
 #  See: https://adventofcode.com/2019                                  #
 #                                                                      #
-#  Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)                #
+#  Copyright © 2020  Chindraba (Ronald Lamoreaux)                      #
 #                    <aoc@chindraba.work>                              #
 #  - All Rights Reserved                                               #
 #                                                                      #
@@ -37,14 +37,46 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::FuelCounterUpper;
+use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
 
-my $VERSION = '0.19.01';
+my $VERSION = '0.19.07';
 
-our $show_progress = 0;
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::puzzle_data_file);
 
-my $puzzle_data_file = $main::data_file;
+# Part 1
+say "=== PART 1 ===";
 
-my $day_1_answer = fuel_counter_upper $puzzle_data_file, 'long';
+# load the given program into memory
+warm_boot();
+load_code_stream(@elf_script);
+# Clear ARGV in preparation for using it with the ElfComp
+$#ARGV = -1;
+# Set the test code in ARGV
+push @ARGV, 1;
+# run the program
+elf_launch();
+
+say "==============";
+
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "=== PART 2 ===";
+
+# load the given program into memory
+warm_boot();
+load_code_stream(@elf_script);
+# Clear ARGV in preparation for using it with the ElfComp
+$#ARGV = -1;
+# Set the test code in ARGV
+push @ARGV, 5;
+# run the program
+elf_launch();
+
+say "==============";
+
 
 1;

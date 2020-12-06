@@ -37,42 +37,51 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw( slurp_data );
-use Elves::CrossedWires;
+use IntCode::ElfComp;
+use Elves::GetData qw( read_comma_list );
 
-my $VERSION = '0.19.03';
+my $VERSION = '0.19.07';
 
-my @file_data = slurp_data($main::data_file);
+# Retrieve the ElfScript file
+my @elf_script = read_comma_list($main::puzzle_data_file);
 
-my %wires = (
-    A => [(split ',', $file_data[0])],
-    B => [(split ',', $file_data[1])],
-);
+# Part 1
+say "=== PART 1 ===";
 
-# Set the origin for mapping and comparisons
-$node_origin = '0:0';
+# load the given program into memory
+load_code_stream(@elf_script);
 
-for my $wire (keys %wires) {
-    # Set the starting point for mapping the wire
-    my $current_node = $node_origin;
-    # Map one of the wires
-    for my $segment (@{ $wires{$wire} }) {
-        $current_node = map_segment $current_node, $segment, $wire;
+# modify the program as instructed in the challenge
+terminal_memory_access(1,12);
+terminal_memory_access(2,2);
+
+# run the program
+elf_launch();
+
+say "Program answer is ",terminal_memory_access(0);
+say "==============";
+
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "\n=== PART 2 ===";
+
+my $target_value = 19690720;
+for my $noun (0..99) {
+    for my $verb (0..99) {
+        warm_boot();
+        # load the given program into memory
+        load_code_stream(@elf_script);
+        terminal_memory_access(1,$noun);
+        terminal_memory_access(2,$verb);
+        elf_launch();
+        if ( terminal_memory_access(0) == $target_value ) {
+            say 100 * $noun + $verb, " = 100 * $noun + $verb and gives ", terminal_memory_access(0);
+            say "==============";
+            exit;
+        }
     }
 }
-
-# Mark the origin point as such, cancelling it being recorded as a crossover
-$node_map{$node_origin} = 'ORIGIN';
-
-my @crossovers = ();
-while ( my ($key, $value) = each %node_map ) {
-    if ( "X" eq $value ) {
-        push @crossovers, $key;
-    }
-}
-@crossovers = sort { node_manhattan($node_origin, $a) <=> node_manhattan($node_origin, $b) } @crossovers;
-
-# Report the results
-say "Closest crossover is ",node_manhattan($node_origin, $crossovers[0])," nodes from the origin at ",$crossovers[0];
 
 1;

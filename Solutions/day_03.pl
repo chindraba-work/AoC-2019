@@ -37,33 +37,66 @@
 use 5.026001;
 use strict;
 use warnings;
-use Elves::GetData qw( read_lines );
+use Elves::GetData qw( slurp_data );
+use Elves::CrossedWires;
 
-my $VERSION = '0.19.04';
+my $VERSION = '0.19.03';
 
-my ($low_limit, $high_limit) = split '-', (read_lines($main::data_file))[0];
+my @file_data = slurp_data($main::puzzle_data_file);
 
-my $count = 0;
-for my $a (1..9) {
-    for my $b ($a..9) {
-        for my $c ($b..9) {
-            for my $d ($c..9) {
-                for my $e ($d..9) {
-                    for my $f ($e..9) {
-                        my $num = join '', ($a,$b,$c,$d,$e,$f);
-                        if (
-                            ( $num >= $low_limit ) &&
-                            ( $num <= $high_limit ) &&
-                            ( $num =~ /([0-9])\1/ )
-                        ) {
-                            $count++;
-                        }
-                    }
-                }
-            }
-        }
+my %wires = (
+    A => [(split ',', $file_data[0])],
+    B => [(split ',', $file_data[1])],
+);
+
+# Set the origin for mapping and comparisons
+$node_origin = '0:0';
+
+for my $wire (keys %wires) {
+    # Set the starting point for mapping the wire
+    my $current_node = $node_origin;
+    $step_count = 0;
+    # Map one of the wires
+    for my $segment (@{ $wires{$wire} }) {
+        $current_node = map_segment $current_node, $segment, $wire;
     }
 }
-say "From $low_limit to $high_limit has $count valid passwords.";
+
+# Mark the origin point as such, cancelling it being recorded as a crossover
+$node_map{$node_origin} = 'ORIGIN';
+
+my @crossovers = ();
+while ( my ($key, $value) = each %node_map ) {
+    if ( "X" eq $value ) {
+        push @crossovers, $key;
+    }
+}
+@crossovers = sort { node_manhattan($node_origin, $a) <=> node_manhattan($node_origin, $b) } @crossovers;
+
+# Part 1
+say "=== PART 1 ===";
+
+# # Report the results
+say "Closest crossover is ",node_manhattan($node_origin, $crossovers[0])," nodes from the origin at ",$crossovers[0];
+
+say "==============";
+
+exit unless $main::do_part_2;
+
+# Part 2
+
+say "=== PART 2 ===";
+
+# Report the results, with step count this time
+say "Closest crossover, by Manhattan distance, is ",node_manhattan($node_origin, $crossovers[0])," nodes, or ", node_steps($node_origin, $crossovers[0]), " steps from the origin at ",$crossovers[0];
+
+@crossovers = sort { node_steps($node_origin, $a) <=> node_steps($node_origin, $b) } @crossovers;
+
+# Report the new results
+say "Closest crossover, by Wire distance, is ",node_manhattan($node_origin, $crossovers[0])," nodes, or ", node_steps($node_origin, $crossovers[0]), " steps from the origin at ",$crossovers[0];
+
+say "==============";
+
+
 
 1;
