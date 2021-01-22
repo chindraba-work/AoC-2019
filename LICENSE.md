@@ -1,3 +1,5 @@
+# The MIT License
+
 Copyright © 2019, 2020  Chindraba (Ronald Lamoreaux)
                <[aoc@chindraba.work](emailto:aoc@chindraba.work?subject=AdvenOfCode%202019)>
 All Rights Reserved
