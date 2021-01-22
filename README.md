@@ -32,11 +32,13 @@ The MIT license applies to all the code within this repository.
 
 The entire text, and ideas, of the challenges are Copyright [Eric Wastl](https://twitter.com/ericwastl).
 
-```
 Copyright © 2019  Chindraba (Ronald Lamoreaux)
                   <aoc@chindraba.work>
 - All Rights Reserved
 
+# The MIT License
+
+```
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
 files (the "Software"), to deal in the Software without
