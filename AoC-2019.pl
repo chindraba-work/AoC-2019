@@ -38,6 +38,7 @@ use 5.026001;
 use strict;
 use warnings;
 use lib ".";
+use lib "./../AoC-Common";
 
 our $aoc_year = 2019;
 our $use_live_data = 1;
