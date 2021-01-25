@@ -26,7 +26,7 @@ Further enhancements for the AsmComp backend made to overhaul the I/O relative t
 
 The AsmComp is futher enhanced to allow sensible commandline, and API-controlled, I/O redirection.
 
-# Copyright and License
+## Copyright and License
 
 The MIT license applies to all the code within this repository.
 
@@ -36,7 +36,7 @@ Copyright © 2019  Chindraba (Ronald Lamoreaux)
                   <aoc@chindraba.work>
 - All Rights Reserved
 
-# The MIT License
+### The MIT License
 
 ```
 Permission is hereby granted, free of charge, to any person
